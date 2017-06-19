@@ -118,6 +118,36 @@ NTSTATUS KExploreDeviceControl(PDEVICE_OBJECT, PIRP Irp) {
         break;
     }
 
+    case KEXPLORE_IOCTL_READ_MEMORY: {
+        auto memory = *static_cast<void**>(Irp->AssociatedIrp.SystemBuffer);
+        auto size = stack->Parameters.Read.Length;
+        auto data = MmGetSystemAddressForMdlSafe(Irp->MdlAddress, NormalPagePriority);
+        if(data == nullptr) {
+            status = STATUS_INSUFFICIENT_RESOURCES;
+            break;
+        }
+
+        // perform the read
+        RtlCopyMemory(data, memory, size);
+        len = size;
+        break;
+    }
+
+    case KEXPLORE_IOCTL_WRITE_MEMORY: {
+        auto memory = *static_cast<void**>(Irp->AssociatedIrp.SystemBuffer);
+        auto size = stack->Parameters.Read.Length;
+        auto data = MmGetSystemAddressForMdlSafe(Irp->MdlAddress, NormalPagePriority);
+        if(data == nullptr) {
+            status = STATUS_INSUFFICIENT_RESOURCES;
+            break;
+        }
+
+        // perform the write
+        RtlCopyMemory(memory, data, size);
+        len = size;
+        break;
+    }
+
     default:
         status = STATUS_INVALID_DEVICE_REQUEST;
         break;
