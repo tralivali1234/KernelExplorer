@@ -9,15 +9,20 @@ using System.Threading;
 using System.Threading.Tasks;
 
 namespace JobView {
-	[StructLayout(LayoutKind.Sequential)]
-	unsafe struct UnicodeString {
-		ushort Length;
-		ushort MaximumLength;
-		public char* Buffer;
-	}
 
 	[SuppressUnmanagedCodeSecurity]
 	static class NativeMethods {
+		[StructLayout(LayoutKind.Sequential)]
+		public unsafe struct UnicodeString {
+			ushort Length;
+			ushort MaximumLength;
+			public char* Buffer;
+		}
+
+		public enum JobAccessMask {
+			Query = 4
+		}
+
 		const int DeviceType = 0x22;
 
 		const int MethodBufferred = 0;
@@ -36,6 +41,12 @@ namespace JobView {
 		public static readonly int KExploreOpenHandle = ControlCode(DeviceType, 0x905, MethodBufferred, FileReadAccess);
 		public static readonly int KExploreReadMemory = ControlCode(DeviceType, 0x901, MethodOutDirect, FileReadAccess);
 
+		[StructLayout(LayoutKind.Sequential)]
+		public struct OpenHandleData {
+			public UIntPtr Object;
+			public uint AccessMask;
+		};
+
 		[DllImport("kernel32", CharSet = CharSet.Unicode, SetLastError = true)]
 		public unsafe static extern bool DeviceIoControl(SafeFileHandle hDevice, int controlCode,
 			ref UIntPtr PspGetNextJob, int inputSize,
@@ -44,7 +55,7 @@ namespace JobView {
 
 		[DllImport("kernel32", CharSet = CharSet.Unicode, SetLastError = true)]
 		public unsafe static extern bool DeviceIoControl(SafeFileHandle hDevice, int controlCode,
-			ref UIntPtr address, int inputSize,
+			ref OpenHandleData data, int inputSize,
 			out IntPtr handle, int outputSize,
 			out int returned, NativeOverlapped* overlapped = null);
 
@@ -88,5 +99,20 @@ namespace JobView {
 
 		[DllImport("ntdll")]
 		public unsafe static extern int NtQueryObject(IntPtr hObject, ObjectInformationClass infoClass, UnicodeString* pString, int size, int* returnedSize = null);
+
+		public enum JobInformationClass {
+			BasicProcessList = 3
+		}
+
+		[StructLayout(LayoutKind.Sequential)]
+		public struct BasicProcessIdList {
+			public int AssignedProcesses;
+			public int ProcessesInList;
+			[MarshalAs(UnmanagedType.ByValArray, SizeConst = 256)]
+			public IntPtr[] ProcessIds;
+		}
+
+		[DllImport("kernel32", CharSet = CharSet.Unicode, SetLastError = true)]
+		public unsafe static extern bool QueryInformationJobObject(IntPtr handle, JobInformationClass infoClass, out BasicProcessIdList processList, int size, int* returned = null);
 	}
 }

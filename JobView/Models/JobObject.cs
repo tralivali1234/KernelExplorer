@@ -27,5 +27,6 @@ namespace JobView.Models {
 		}
 
 		public IReadOnlyList<JobObject> ChildJobs => _childJobs;
+
 	}
 }

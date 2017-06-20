@@ -6,6 +6,7 @@
              xmlns:local="clr-namespace:JobView.Views"
              xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity"
              xmlns:z="http://zodiacon.wpf/2016"
+             xmlns:metro="http://metro.mahapps.com/winfx/xaml/controls"
              mc:Ignorable="d" 
              d:DesignHeight="300" d:DesignWidth="300">
     <Grid>
@@ -25,26 +26,34 @@
                 </StackPanel>
             </Button>
         </ToolBar>
-        <TreeView ItemsSource="{Binding RootJobs}" Grid.Row="1" VirtualizingPanel.IsVirtualizing="True">
-            <TreeView.ItemContainerStyle>
-                <Style TargetType="TreeViewItem">
-                    <Setter Property="IsExpanded" Value="True" />
-                    <Setter Property="IsSelected" Value="{Binding IsSelected, Mode=TwoWay, Delay=200}" />
-                </Style>
-            </TreeView.ItemContainerStyle>
-            <i:Interaction.Behaviors>
-                <z:TreeViewSelectedItemBehavior SelectedItem="{Binding SelectedJob, Mode=TwoWay}" />
-            </i:Interaction.Behaviors>
-            <TreeView.ItemTemplate>
-                <HierarchicalDataTemplate ItemsSource="{Binding ChildJobs}">
-                    <StackPanel Orientation="Horizontal">
-                        <Image Source="{Binding Icon}" Width="20" Height="20" />
-                        <TextBlock Text="{Binding Address, StringFormat=X}" Margin="4,0,0,0" VerticalAlignment="Center" />
-                        <TextBlock Text="{Binding Name}" FontWeight="Bold" Margin="4,0,0,0" VerticalAlignment="Center" />
-                    </StackPanel>
-                </HierarchicalDataTemplate>
-            </TreeView.ItemTemplate>
-        </TreeView>
+        <Grid Grid.Row="1">
+            <TreeView ItemsSource="{Binding RootJobs}"  VirtualizingPanel.IsVirtualizing="True">
+                <TreeView.ItemContainerStyle>
+                    <Style TargetType="TreeViewItem">
+                        <Setter Property="IsExpanded" Value="True" />
+                        <Setter Property="IsSelected" Value="{Binding IsSelected, Mode=TwoWay, Delay=200}" />
+                        <Style.Triggers>
+                            <Trigger Property="IsSelected" Value="True">
+                                <Setter Property="z:TreeViewItemHelper.BringIntoViewWhenSelected" Value="True" />
+                            </Trigger>
+                        </Style.Triggers>
+                    </Style>
+                </TreeView.ItemContainerStyle>
+                <i:Interaction.Behaviors>
+                    <z:TreeViewSelectedItemBehavior SelectedItem="{Binding SelectedJob, Mode=TwoWay}" />
+                </i:Interaction.Behaviors>
+                <TreeView.ItemTemplate>
+                    <HierarchicalDataTemplate ItemsSource="{Binding ChildJobs}">
+                        <StackPanel Orientation="Horizontal">
+                            <Image Source="{Binding Icon}" Width="20" Height="20" />
+                            <TextBlock Text="{Binding Address, StringFormat=X}" Margin="4,0,0,0" VerticalAlignment="Center" />
+                            <TextBlock Text="{Binding Name}" FontWeight="Bold" Margin="4,0,0,0" VerticalAlignment="Center" />
+                        </StackPanel>
+                    </HierarchicalDataTemplate>
+                </TreeView.ItemTemplate>
+            </TreeView>
+            <metro:ProgressRing IsActive="{Binding IsBusy}" IsLarge="True" />
+        </Grid>
         <local:JobDetailsView Grid.Column="1" Grid.Row="1" DataContext="{Binding JobDetails}">
         </local:JobDetailsView>
         <GridSplitter Background="Black" Width="2" HorizontalAlignment="Right" VerticalAlignment="Stretch" Margin="-1,0"

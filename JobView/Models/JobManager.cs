@@ -7,6 +7,7 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
+using static JobView.NativeMethods;
 
 namespace JobView.Models {
 	class JobManager {
@@ -45,8 +46,8 @@ namespace JobView.Models {
 			var pString = (UnicodeString*)bytes;
 			int status;
 			foreach (var address in jobAddresses) {
-				using (var handle = driver.OpenHandle(address)) {
-					status = NativeMethods.NtQueryObject(handle.DangerousGetHandle(), NativeMethods.ObjectInformationClass.ObjectNameInformation, pString, 512);
+				using (var handle = driver.OpenHandle(address, (int)JobAccessMask.Query)) {	
+					status = NtQueryObject(handle.DangerousGetHandle(), ObjectInformationClass.ObjectNameInformation, pString, 512);
 				}
 				var job = new JobObject(address, status == 0 ? new string(pString->Buffer) : null);
 				_jobs.Add(address, job);		

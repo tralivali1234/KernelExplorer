@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Input;
 
@@ -18,12 +19,14 @@ namespace JobView.ViewModels {
 
 		public DriverInterface Driver => _driver;
 
-		public JobDetailsViewModel JobDetails { get; } 
+		public JobDetailsViewModel JobDetails { get; }
 
 		public MainViewModel() {
 			_jobManager = new JobManager();
 			_driver = new DriverInterface();
 			JobDetails = new JobDetailsViewModel(this);
+			Thread.CurrentThread.Priority = ThreadPriority.Highest;
+
 			Refresh();
 		}
 
@@ -34,17 +37,32 @@ namespace JobView.ViewModels {
 
 		public IEnumerable<JobObjectViewModel> RootJobs => _rootJobs;
 
-		public ICommand RefreshCommand => new DelegateCommand(() => Refresh());
+		public ICommand RefreshCommand => new DelegateCommand(async () => await Refresh());
 
-		private void Refresh() {
-			_jobManager.BuildJobTree(_driver);
-			_jobs = _jobManager.AllJobs.Select(job => new JobObjectViewModel(job)).ToDictionary(job => job.Job.Address);
-			_rootJobs = _jobs.Values.Where(job => job.ParentJob == null).ToList();
-			foreach (var job in _jobs.Values.Where(job => job.Job.ChildJobs != null)) {
-				job.ChildJobs = job.Job.ChildJobs.Select(child => new JobObjectViewModel(child)).ToList();
-			}
+		private bool _IsBusy;
+
+		public bool IsBusy {
+			get { return _IsBusy; }
+			set { SetProperty(ref _IsBusy, value); }
+		}
+
+		private async Task Refresh() {
+			_rootJobs = null;
+			_jobs = null;
+			IsBusy = true;
+
+			await Task.Run(() => {
+				_jobManager.BuildJobTree(_driver);
+				_jobs = _jobManager.AllJobs.Select(job => new JobObjectViewModel(job)).ToDictionary(job => job.Job.Address);
+				_rootJobs = _jobs.Values.Where(job => job.ParentJob == null).ToList();
+				foreach (var job in _jobs.Values.Where(job => job.Job.ChildJobs != null)) {
+					job.ChildJobs = job.Job.ChildJobs.Select(child => new JobObjectViewModel(child)).ToList();
+				}
+			});
 
 			RaisePropertyChanged(nameof(RootJobs));
+			IsBusy = false;
+			SelectedJob = null;
 		}
 
 		public JobObjectViewModel GetJobByAddress(UIntPtr address) {

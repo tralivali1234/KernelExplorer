@@ -57,6 +57,20 @@
                     </ItemsPanelTemplate>
                 </ItemsControl.ItemsPanel>
             </ItemsControl>
+
+            <TextBlock Grid.Row="4" Text="{Binding Processes.Length, StringFormat=Processes (\{0\}):}" />
+            <ItemsControl Grid.Row="4" Grid.Column="2" ItemsSource="{Binding Processes}">
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                        <Border BorderThickness="0,0,1,0" Padding="2" BorderBrush="{DynamicResource AccentColorBrush}">
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="{Binding Id}" Width="60" TextAlignment="Right" />
+                                <TextBlock Text="{Binding Name}" Margin="4,0,0,0" FontWeight="Bold" />
+                            </StackPanel>
+                        </Border>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
         </Grid>
     </ScrollViewer>
 </UserControl>

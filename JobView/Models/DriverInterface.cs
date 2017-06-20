@@ -8,6 +8,7 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
+using static JobView.NativeMethods;
 
 namespace JobView.Models {
 	class DriverInterface : IDisposable {
@@ -29,12 +30,17 @@ namespace JobView.Models {
 			GetKernelAddress(out _kernelAddress);
 		}
 
-		public unsafe SafeFileHandle OpenHandle(UIntPtr address) {
+		public unsafe SafeFileHandle OpenHandle(UIntPtr address, uint accessMask) {
 			IntPtr handle = IntPtr.Zero;
 			int returned;
 
+			OpenHandleData data;
+			data.Object = address;
+			data.AccessMask = accessMask;
+
 			NativeMethods.DeviceIoControl(_hDevice, NativeMethods.KExploreOpenHandle,
-				ref address, IntPtr.Size, out handle, IntPtr.Size, out returned);
+				ref data, Marshal.SizeOf<OpenHandleData>(), 
+				out handle, IntPtr.Size, out returned);
 			return new SafeFileHandle(handle, true);
 		}
 
