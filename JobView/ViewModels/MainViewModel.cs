@@ -27,7 +27,9 @@ namespace JobView.ViewModels {
 			JobDetails = new JobDetailsViewModel(this);
 			Thread.CurrentThread.Priority = ThreadPriority.Highest;
 
+#pragma warning disable CS4014 // Because this call is not awaited, execution of the current method continues before the call is completed
 			Refresh();
+#pragma warning restore CS4014 // Because this call is not awaited, execution of the current method continues before the call is completed
 		}
 
 
@@ -58,6 +60,10 @@ namespace JobView.ViewModels {
 				foreach (var job in _jobs.Values.Where(job => job.Job.ChildJobs != null)) {
 					job.ChildJobs = job.Job.ChildJobs.Select(child => new JobObjectViewModel(child)).ToList();
 				}
+
+				//foreach (var job in _jobs.Values.Where(job => job.Job.Parent != null)) {
+				//	job.ParentJob = _jobs[job.Job.Parent.Address];
+				//}
 			});
 
 			RaisePropertyChanged(nameof(RootJobs));

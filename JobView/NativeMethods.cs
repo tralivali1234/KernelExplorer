@@ -101,18 +101,34 @@ namespace JobView {
 		public unsafe static extern int NtQueryObject(IntPtr hObject, ObjectInformationClass infoClass, UnicodeString* pString, int size, int* returnedSize = null);
 
 		public enum JobInformationClass {
+			BasicAccountingInformation = 1,
 			BasicProcessList = 3
 		}
 
 		[StructLayout(LayoutKind.Sequential)]
-		public struct BasicProcessIdList {
+		public struct JobBasicProcessIdList {
 			public int AssignedProcesses;
 			public int ProcessesInList;
 			[MarshalAs(UnmanagedType.ByValArray, SizeConst = 256)]
 			public IntPtr[] ProcessIds;
 		}
 
+		[StructLayout(LayoutKind.Sequential)]
+		public struct JobBasicAccoutingInformation {
+			public long TotalUserTime;
+			public long TotalKernelTime;
+			public long ThisPeriodTotalUserTime;
+			public long ThisPeriodTotalKernelTime;
+			public uint TotalPageFaultCount;
+			public uint TotalProcesses;
+			public uint ActiveProcesses;
+			public uint TotalTerminatedProcesses;
+		}
+
 		[DllImport("kernel32", CharSet = CharSet.Unicode, SetLastError = true)]
-		public unsafe static extern bool QueryInformationJobObject(IntPtr handle, JobInformationClass infoClass, out BasicProcessIdList processList, int size, int* returned = null);
+		public unsafe static extern bool QueryInformationJobObject(IntPtr handle, JobInformationClass infoClass, out JobBasicProcessIdList processList, int size, int* returned = null);
+
+		[DllImport("kernel32", CharSet = CharSet.Unicode, SetLastError = true)]
+		public unsafe static extern bool QueryInformationJobObject(IntPtr handle, JobInformationClass infoClass, out JobBasicAccoutingInformation info, int size, int* returned = null);
 	}
 }

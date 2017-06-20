@@ -8,6 +8,7 @@ using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 using static JobView.NativeMethods;
+using Microsoft.Win32.SafeHandles;
 
 namespace JobView.Models {
 	class JobManager {
@@ -45,12 +46,14 @@ namespace JobView.Models {
 			var bytes = stackalloc byte[512];
 			var pString = (UnicodeString*)bytes;
 			int status;
+			int processCount;
 			foreach (var address in jobAddresses) {
-				using (var handle = driver.OpenHandle(address, (int)JobAccessMask.Query)) {	
+				using (var handle = driver.OpenHandle(address, (int)JobAccessMask.Query)) {
 					status = NtQueryObject(handle.DangerousGetHandle(), ObjectInformationClass.ObjectNameInformation, pString, 512);
+					processCount = GetJobProcessCount(handle);
 				}
-				var job = new JobObject(address, status == 0 ? new string(pString->Buffer) : null);
-				_jobs.Add(address, job);		
+				var job = new JobObject(address, status == 0 ? new string(pString->Buffer) : null, processCount);
+				_jobs.Add(address, job);
 			}
 
 			foreach (var address in jobAddresses) {
@@ -71,6 +74,14 @@ namespace JobView.Models {
 				}
 			}
 
+		}
+
+		private unsafe static int GetJobProcessCount(SafeFileHandle handle) {
+			JobBasicProcessIdList list;
+			if (QueryInformationJobObject(handle.DangerousGetHandle(), JobInformationClass.BasicProcessList, out list, Marshal.SizeOf<JobBasicProcessIdList>())) {
+				return list.ProcessesInList;
+			}
+			return 0;
 		}
 	}
 }

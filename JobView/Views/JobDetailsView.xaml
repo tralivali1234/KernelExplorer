@@ -8,7 +8,7 @@
              mc:Ignorable="d" 
              d:DesignHeight="300" d:DesignWidth="300" Margin="8" x:Name="This">
     <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" metro:VisibilityHelper.IsVisible="{Binding IsJobSelected}">
-        <Grid>
+        <Grid TextElement.FontSize="12">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="Auto" />
@@ -22,7 +22,7 @@
             </Grid.RowDefinitions>
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="Auto" />
-                <ColumnDefinition Width="8" />
+                <ColumnDefinition Width="12" />
                 <ColumnDefinition />
             </Grid.ColumnDefinitions>
             <TextBlock Text="Address:" />
@@ -62,15 +62,31 @@
             <ItemsControl Grid.Row="4" Grid.Column="2" ItemsSource="{Binding Processes}">
                 <ItemsControl.ItemTemplate>
                     <DataTemplate>
-                        <Border BorderThickness="0,0,1,0" Padding="2" BorderBrush="{DynamicResource AccentColorBrush}">
+                        <Border BorderThickness="0,0,0,1" Padding="2" BorderBrush="{DynamicResource AccentColorBrush}" HorizontalAlignment="Left">
                             <StackPanel Orientation="Horizontal">
-                                <TextBlock Text="{Binding Id}" Width="60" TextAlignment="Right" />
+                                <TextBlock Text="{Binding Id}" MinWidth="50" TextAlignment="Right" />
                                 <TextBlock Text="{Binding Name}" Margin="4,0,0,0" FontWeight="Bold" />
                             </StackPanel>
                         </Border>
                     </DataTemplate>
                 </ItemsControl.ItemTemplate>
             </ItemsControl>
+
+            <TextBlock Margin="0,4" Grid.Row="5" Text="Processes in Job:" />
+            <TextBlock Margin="0,4" Grid.Column="2" Grid.Row="5" DataContext="{Binding JobInformation}">
+                <Run Text="{Binding TotalProcesses, StringFormat=Total: \{0\}, Mode=OneWay}" />
+                <Span>       </Span>
+                <Run Text="{Binding ActiveProcesses, StringFormat=Active: \{0\}, Mode=OneWay}" />
+                <Span>       </Span>
+                <Run Text="{Binding TerminatedProcesses, StringFormat=Terminated: \{0\}, Mode=OneWay}" />
+            </TextBlock>
+
+            <TextBlock Grid.Row="6" Text="Times:" />
+            <TextBlock Grid.Row="6" Grid.Column="2" DataContext="{Binding JobInformation}">
+                <Run Text="{Binding TotalKernelTime, StringFormat=Total Kernel Time: \{0\}, Mode=OneWay}" />
+                <Span>       </Span>
+                <Run Text="{Binding TotalUserTime, StringFormat=Total User Time: \{0\}, Mode=OneWay}" />
+            </TextBlock>
         </Grid>
     </ScrollViewer>
 </UserControl>

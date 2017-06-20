@@ -19,8 +19,8 @@ namespace JobView.Models {
 		UIntPtr _kernelAddress;
 
 		public DriverInterface() {
-			_hDevice = NativeMethods.CreateFile(@"\\.\KExplore", NativeMethods.FileAccessMask.GenericRead | NativeMethods.FileAccessMask.GenericWrite, NativeMethods.FileShareMode.Read,
-				IntPtr.Zero, NativeMethods.CreationDisposition.OpenExisting, NativeMethods.CreateFileFlags.None, IntPtr.Zero);
+			_hDevice = CreateFile(@"\\.\KExplore", FileAccessMask.GenericRead | FileAccessMask.GenericWrite, FileShareMode.Read,
+				IntPtr.Zero, CreationDisposition.OpenExisting, CreateFileFlags.None, IntPtr.Zero);
 			if (_hDevice.IsInvalid)
 				throw new Win32Exception(Marshal.GetLastWin32Error());
 			_symbolHandler = SymbolHandler.Create(SymbolOptions.AllowAbsoluteSymbols | SymbolOptions.CaseInsensitive | SymbolOptions.AllowZeroAddress);
@@ -65,7 +65,7 @@ namespace JobView.Models {
 
 			var addresses = new UIntPtr[2048];       // unlikely to be more... (famous last words)
 			int returned;
-			if (NativeMethods.DeviceIoControl(_hDevice, NativeMethods.KExploreEnumJobs, 
+			if (DeviceIoControl(_hDevice, KExploreEnumJobs, 
 				ref _PspGetNextJob, UIntPtr.Size, 
 				addresses, addresses.Length * IntPtr.Size, 
 				out returned)) {
@@ -78,7 +78,7 @@ namespace JobView.Models {
 
 		public unsafe bool ReadMemory(UIntPtr address, byte[] buffer, int size = 0) {
 			int returned;
-			return NativeMethods.DeviceIoControl(_hDevice, NativeMethods.KExploreReadMemory,
+			return DeviceIoControl(_hDevice, KExploreReadMemory,
 				ref address, IntPtr.Size,
 				buffer, size == 0 ? buffer.Length : size,
 				out returned);

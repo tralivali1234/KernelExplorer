@@ -9,6 +9,7 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows.Threading;
 using static JobView.NativeMethods;
 
 namespace JobView.ViewModels {
@@ -22,7 +23,8 @@ namespace JobView.ViewModels {
 		public JobDetailsViewModel(IMainViewModel mainViewModel) {
 			_mainViewModel = mainViewModel;
 
-			GoToJobCommand = new DelegateCommand<JobObjectViewModel>(job => {
+			GoToJobCommand = new DelegateCommand<JobObjectViewModel>(async job => {
+				await Dispatcher.CurrentDispatcher.InvokeAsync(() => _job.IsExpanded = true);
 				job.IsSelected = true;
 			});
 		}
@@ -53,6 +55,7 @@ namespace JobView.ViewModels {
 				RaisePropertyChanged(nameof(IsJobSelected));
 				RaisePropertyChanged(nameof(ParentJob));
 				RaisePropertyChanged(nameof(Processes));
+				RaisePropertyChanged(nameof(JobInformation));
 			}
 		}
 
@@ -68,15 +71,33 @@ namespace JobView.ViewModels {
 					if (_job == null)
 						return null;
 
-					BasicProcessIdList list;
-					if (QueryInformationJobObject(_jobHadle.DangerousGetHandle(), JobInformationClass.BasicProcessList, out list, Marshal.SizeOf<BasicProcessIdList>())) {
+					JobBasicProcessIdList list;
+					if (QueryInformationJobObject(_jobHadle.DangerousGetHandle(), JobInformationClass.BasicProcessList, out list, Marshal.SizeOf<JobBasicProcessIdList>())) {
 						_processes = list.ProcessIds.Take(list.ProcessesInList).Select(id => new ProcessViewModel {
 							Id = id.ToInt32(),
 							Name = Process.GetProcessById(id.ToInt32())?.ProcessName
-						}).ToArray();
+						}).OrderBy(process => process.Name).ToArray();
+						_job.ProcessCount = _processes.Length;
 					}
 				}
 				return _processes;
+			}
+		}
+
+		public unsafe JobObjectInformation JobInformation {
+			get {
+				if (_job == null)
+					return null;
+
+				JobBasicAccoutingInformation info1;
+				QueryInformationJobObject(_jobHadle.DangerousGetHandle(), JobInformationClass.BasicAccountingInformation, out info1, Marshal.SizeOf<JobBasicAccoutingInformation>());
+				return new JobObjectInformation {
+					TotalProcesses = info1.TotalProcesses,
+					ActiveProcesses = info1.ActiveProcesses,
+					TerminatedProcesses = info1.TotalTerminatedProcesses,
+					TotalKernelTime = TimeSpan.FromTicks(info1.TotalKernelTime),
+					TotalUserTime = TimeSpan.FromTicks(info1.TotalUserTime)
+				};
 			}
 		}
 	}

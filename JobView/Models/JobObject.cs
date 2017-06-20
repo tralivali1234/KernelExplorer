@@ -12,12 +12,14 @@ namespace JobView.Models {
 		
 		public UIntPtr Address { get; }
 		public string Name { get; }
+		public int ProcessCount { get; }
 
 		public JobObject Parent { get; internal set; }
 
-		public JobObject(UIntPtr address, string name) {
+		public JobObject(UIntPtr address, string name, int processCount) {
 			Address = address;
 			Name = name;
+			ProcessCount = processCount;
 		}
 
 		public void AddChildJob(JobObject job) {

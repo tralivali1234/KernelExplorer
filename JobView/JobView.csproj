@@ -87,6 +87,7 @@
     <Compile Include="Models\DriverInterface.cs" />
     <Compile Include="Models\JobManager.cs" />
     <Compile Include="Models\JobObject.cs" />
+    <Compile Include="Models\JobObjectInformation.cs" />
     <Compile Include="NativeMethods.cs" />
     <Compile Include="ViewModels\JobDetailsViewModel.cs" />
     <Compile Include="ViewModels\JobObjectViewModel.cs" />
@@ -165,6 +166,12 @@
   </ItemGroup>
   <ItemGroup>
     <Resource Include="Icons\job.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Icons\rootjob_plus.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Icons\job_plus.ico" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
