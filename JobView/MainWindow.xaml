@@ -1,13 +1,15 @@
-﻿<Window x:Class="JobView.MainWindow"
+﻿<metro:MetroWindow x:Class="JobView.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:metro="http://metro.mahapps.com/winfx/xaml/controls"
         xmlns:local="clr-namespace:JobView"
         xmlns:view="clr-namespace:JobView.Views"
-        mc:Ignorable="d"
-        Title="Job Objects View (C)2017 by Pavel Yosifovich" MinHeight="300" MinWidth="480">
+        mc:Ignorable="d" TitleCaps="False" Icon="/icons/app.ico"
+        Title="Job Objects View (C)2017 by Pavel Yosifovich" MinHeight="320" MinWidth="480"
+                   BorderThickness="1" BorderBrush="{DynamicResource AccentColorBrush}">
     <view:MainView>
         
     </view:MainView>
-</Window>
+</metro:MetroWindow>

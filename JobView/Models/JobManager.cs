@@ -13,6 +13,7 @@ namespace JobView.Models {
 		List<JobObject> _rootJobs = new List<JobObject>(64);
 		Dictionary<UIntPtr, JobObject> _jobs = new Dictionary<UIntPtr, JobObject>(128);
 		static int _parentJobOffset;
+
 		static int ParentJobOffset {
 			get {
 				if (_parentJobOffset == 0) {
@@ -33,7 +34,12 @@ namespace JobView.Models {
 
 		public IReadOnlyList<JobObject> RootJobs => _rootJobs;
 
+		public ICollection<JobObject> AllJobs => _jobs.Values;
+
 		public unsafe void BuildJobTree(DriverInterface driver) {
+			_rootJobs.Clear();
+			_jobs.Clear();
+
 			var jobAddresses = driver.EnumJobs();
 			var bytes = stackalloc byte[512];
 			var pString = (UnicodeString*)bytes;

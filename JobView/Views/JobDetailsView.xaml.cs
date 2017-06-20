@@ -13,12 +13,12 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 
-namespace JobView {
+namespace JobView.Views {
 	/// <summary>
-	/// Interaction logic for MainWindow.xaml
+	/// Interaction logic for JobDetailsView.xaml
 	/// </summary>
-	public partial class MainWindow {
-		public MainWindow() {
+	public partial class JobDetailsView : UserControl {
+		public JobDetailsView() {
 			InitializeComponent();
 		}
 	}

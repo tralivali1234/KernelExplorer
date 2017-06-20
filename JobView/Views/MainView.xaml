@@ -4,18 +4,37 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:JobView.Views"
+             xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity"
+             xmlns:z="http://zodiacon.wpf/2016"
              mc:Ignorable="d" 
              d:DesignHeight="300" d:DesignWidth="300">
     <Grid>
         <Grid.ColumnDefinitions>
             <ColumnDefinition />
-            <ColumnDefinition />
+            <ColumnDefinition Width="2*"/>
         </Grid.ColumnDefinitions>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
             <RowDefinition  />
         </Grid.RowDefinitions>
-        <TreeView ItemsSource="{Binding RootJobs}" Grid.Row="1">
+        <ToolBar>
+            <Button Command="{Binding RefreshCommand}">
+                <StackPanel Orientation="Horizontal">
+                    <Image Source="/icons/refresh.ico" Width="24" Height="24" />
+                    <TextBlock Text="Refresh" Margin="4,0,0,0" VerticalAlignment="Center" />
+                </StackPanel>
+            </Button>
+        </ToolBar>
+        <TreeView ItemsSource="{Binding RootJobs}" Grid.Row="1" VirtualizingPanel.IsVirtualizing="True">
+            <TreeView.ItemContainerStyle>
+                <Style TargetType="TreeViewItem">
+                    <Setter Property="IsExpanded" Value="True" />
+                    <Setter Property="IsSelected" Value="{Binding IsSelected, Mode=TwoWay, Delay=200}" />
+                </Style>
+            </TreeView.ItemContainerStyle>
+            <i:Interaction.Behaviors>
+                <z:TreeViewSelectedItemBehavior SelectedItem="{Binding SelectedJob, Mode=TwoWay}" />
+            </i:Interaction.Behaviors>
             <TreeView.ItemTemplate>
                 <HierarchicalDataTemplate ItemsSource="{Binding ChildJobs}">
                     <StackPanel Orientation="Horizontal">
@@ -26,5 +45,9 @@
                 </HierarchicalDataTemplate>
             </TreeView.ItemTemplate>
         </TreeView>
+        <local:JobDetailsView Grid.Column="1" Grid.Row="1" DataContext="{Binding JobDetails}">
+        </local:JobDetailsView>
+        <GridSplitter Background="Black" Width="2" HorizontalAlignment="Right" VerticalAlignment="Stretch" Margin="-1,0"
+                      Grid.Row="1"/>
     </Grid>
 </UserControl>
