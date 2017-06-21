@@ -25,6 +25,8 @@ namespace JobView.ViewModels {
 		Dictionary<UIntPtr, JobObjectViewModel> _jobs;
 		readonly IUIServices UI;
 
+		public IDictionary<UIntPtr, JobObjectViewModel> Jobs => _jobs;
+
 		public DriverInterface Driver => _driver;
 
 		public JobDetailsViewModel JobDetails { get; }
@@ -114,13 +116,10 @@ namespace JobView.ViewModels {
 				foreach (var job in _jobs.Values.Where(job => job.Job.ChildJobs != null)) {
 					job.ChildJobs = job.Job.ChildJobs.Select(child => new JobObjectViewModel(child)).ToList();
 				}
-
-				//foreach (var job in _jobs.Values.Where(job => job.Job.Parent != null)) {
-				//	job.ParentJob = _jobs[job.Job.Parent.Address];
-				//}
 			});
 
 			RaisePropertyChanged(nameof(RootJobs));
+			RaisePropertyChanged(nameof(ActiveProcessesInJob));
 			IsBusy = false;
 			SelectedJob = null;
 		}
@@ -140,6 +139,8 @@ namespace JobView.ViewModels {
 				}
 			}
 		}
+
+		public int ActiveProcessesInJob => _jobs.Values.Sum(j => j.ProcessCount);
 
 	}
 }
