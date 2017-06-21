@@ -9,6 +9,7 @@ using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using System.Windows;
+using Zodiacon.WPF;
 
 namespace JobView {
 	/// <summary>
@@ -16,6 +17,8 @@ namespace JobView {
 	/// </summary>
 	public partial class App : Application {
 		readonly Dictionary<string, Assembly> _assemblies = new Dictionary<string, Assembly>(4);
+
+		public static string Title => "Job Objects View";
 
 		[MethodImpl(MethodImplOptions.NoInlining)]
 		private void LoadAssemblies() {
@@ -70,8 +73,12 @@ namespace JobView {
 		protected override void OnStartup(StartupEventArgs e) {
 			base.OnStartup(e);
 
-			var vm = new MainViewModel();
-			var win = new MainWindow { DataContext = vm };
+			IUIServices ui = new UIServicesDefaults();
+			var win = new MainWindow();
+			ui.MessageBoxService.SetOwner(win);
+			var vm = new MainViewModel(ui);
+			win.DataContext = vm;
+
 			win.Show();
 		}
 	}

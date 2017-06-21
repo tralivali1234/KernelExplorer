@@ -74,18 +74,20 @@
 
             <TextBlock Margin="0,4" Grid.Row="5" Text="Processes in Job:" />
             <TextBlock Margin="0,4" Grid.Column="2" Grid.Row="5" DataContext="{Binding JobInformation}">
-                <Run Text="{Binding TotalProcesses, StringFormat=Total: \{0\}, Mode=OneWay}" />
-                <Span>       </Span>
-                <Run Text="{Binding ActiveProcesses, StringFormat=Active: \{0\}, Mode=OneWay}" />
-                <Span>       </Span>
-                <Run Text="{Binding TerminatedProcesses, StringFormat=Terminated: \{0\}, Mode=OneWay}" />
+                <Span>Total: </Span>
+                <Run Text="{Binding TotalProcesses, Mode=OneWay}" FontWeight="Bold" />
+                <Span>       Active: </Span>
+                <Run Text="{Binding ActiveProcesses, Mode=OneWay}" FontWeight="Bold" />
+                <Span>       Terminated: </Span>
+                <Run Text="{Binding TerminatedProcesses, Mode=OneWay}" FontWeight="Bold" />
             </TextBlock>
 
             <TextBlock Grid.Row="6" Text="Times:" />
             <TextBlock Grid.Row="6" Grid.Column="2" DataContext="{Binding JobInformation}">
-                <Run Text="{Binding TotalKernelTime, StringFormat=Total Kernel Time: \{0\}, Mode=OneWay}" />
-                <Span>       </Span>
-                <Run Text="{Binding TotalUserTime, StringFormat=Total User Time: \{0\}, Mode=OneWay}" />
+                <Span>Total Kernel Time: </Span>
+                <Run Text="{Binding TotalKernelTime, Mode=OneWay}" FontWeight="Bold" />
+                <Span>       Total User Time: </Span>
+                <Run Text="{Binding TotalUserTime, Mode=OneWay}" FontWeight="Bold" />
             </TextBlock>
         </Grid>
     </ScrollViewer>

@@ -125,10 +125,52 @@ namespace JobView {
 			public uint TotalTerminatedProcesses;
 		}
 
+		[Flags]
+		public enum ServiceAccessMask {
+			Connect = 0x0001,
+			CreateService = 0x0002,
+			EnumerateService = 0x0004,
+			Lock = 0x0008,
+			LockStatus = 0x0010,
+			ModifyBootConfig = 0x0020,
+			AllAccess = 0xf0000 | Connect | CreateService | EnumerateService | Lock | LockStatus | ModifyBootConfig
+		}
+
+		public enum ServiceType {
+			KernelDriver = 1
+		}
+
+		public enum ServiceStartType {
+			DemandStart = 3
+		}
+
+		public enum ServiceErrorControl {
+			Normal = 1
+		}
+
 		[DllImport("kernel32", CharSet = CharSet.Unicode, SetLastError = true)]
 		public unsafe static extern bool QueryInformationJobObject(IntPtr handle, JobInformationClass infoClass, out JobBasicProcessIdList processList, int size, int* returned = null);
 
 		[DllImport("kernel32", CharSet = CharSet.Unicode, SetLastError = true)]
 		public unsafe static extern bool QueryInformationJobObject(IntPtr handle, JobInformationClass infoClass, out JobBasicAccoutingInformation info, int size, int* returned = null);
+
+		[DllImport("advapi32", CharSet = CharSet.Unicode, SetLastError = true)]
+		public static extern IntPtr OpenSCManager(string machineName, string databaseName, ServiceAccessMask accessMask);
+
+		[DllImport("advapi32", CharSet = CharSet.Unicode, SetLastError = true)]
+		public static extern IntPtr OpenService(IntPtr hScm, string serviceName, ServiceAccessMask accessMask);
+
+		[DllImport("advapi32", CharSet = CharSet.Unicode, SetLastError = true)]
+		public static extern bool DeleteService(IntPtr hService);
+
+		[DllImport("advapi32", CharSet = CharSet.Unicode, SetLastError = true)]
+		public static extern IntPtr CreateService(IntPtr hScm, string serviceName, string displayName, ServiceAccessMask desiredAccess,
+			ServiceType serviceType, ServiceStartType startType, ServiceErrorControl errorControl,
+			string imagePath, string loadOrderGroup, IntPtr tag,
+			string dependencies = null, string serviceStartName = null, string password = null);
+
+		[DllImport("advapi32", CharSet = CharSet.Unicode, SetLastError = true)]
+		public static extern bool CloseServiceHandle(IntPtr handle);
+
 	}
 }
