@@ -26,6 +26,7 @@
     <WarningLevel>4</WarningLevel>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <Prefer32Bit>false</Prefer32Bit>
+    <UseVSHostingProcess>false</UseVSHostingProcess>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <PlatformTarget>AnyCPU</PlatformTarget>
@@ -37,6 +38,7 @@
     <WarningLevel>4</WarningLevel>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <Prefer32Bit>false</Prefer32Bit>
+    <UseVSHostingProcess>false</UseVSHostingProcess>
   </PropertyGroup>
   <PropertyGroup>
     <ApplicationIcon>Icons\app.ico</ApplicationIcon>
@@ -44,22 +46,22 @@
   <ItemGroup>
     <Reference Include="DebugHelp, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\DebugHelp.0.3.0\lib\net40\DebugHelp.dll</HintPath>
-      <Private>True</Private>
+      <Private>False</Private>
     </Reference>
     <Reference Include="MahApps.Metro, Version=1.6.0.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\MahApps.Metro.1.6.0-alpha004\lib\net45\MahApps.Metro.dll</HintPath>
-      <Private>True</Private>
+      <Private>False</Private>
     </Reference>
     <Reference Include="Prism, Version=6.3.0.0, Culture=neutral, PublicKeyToken=40ee6c3a2184dc59, processorArchitecture=MSIL">
       <HintPath>..\packages\Prism.Core.6.3.0\lib\net45\Prism.dll</HintPath>
-      <Private>True</Private>
+      <Private>False</Private>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.ComponentModel.Composition" />
     <Reference Include="System.Data" />
     <Reference Include="System.Windows.Interactivity, Version=4.5.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <HintPath>..\packages\MahApps.Metro.1.6.0-alpha004\lib\net45\System.Windows.Interactivity.dll</HintPath>
-      <Private>True</Private>
+      <Private>False</Private>
     </Reference>
     <Reference Include="System.Xml" />
     <Reference Include="Microsoft.CSharp" />
@@ -75,7 +77,7 @@
     <Reference Include="PresentationFramework" />
     <Reference Include="Zodiacon.WPF, Version=1.1.6380.23201, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\Zodiacon.WPF.1.2.9\lib\net45\Zodiacon.WPF.dll</HintPath>
-      <Private>True</Private>
+      <Private>False</Private>
     </Reference>
   </ItemGroup>
   <ItemGroup>
@@ -148,10 +150,7 @@
   <ItemGroup>
     <None Include="App.config" />
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Assemblies\" />
-    <Folder Include="NativeBinaries\" />
-  </ItemGroup>
+  <ItemGroup />
   <ItemGroup>
     <Resource Include="Icons\rootjob.ico" />
   </ItemGroup>
@@ -172,6 +171,27 @@
   </ItemGroup>
   <ItemGroup>
     <Resource Include="Icons\job_plus.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="..\packages\DebugHelp.0.3.0\lib\net40\DebugHelp.dll">
+      <Link>Assemblies\DebugHelp.dll</Link>
+    </EmbeddedResource>
+    <EmbeddedResource Include="..\packages\MahApps.Metro.1.6.0-alpha004\lib\net45\MahApps.Metro.dll">
+      <Link>Assemblies\MahApps.Metro.dll</Link>
+    </EmbeddedResource>
+    <EmbeddedResource Include="..\packages\MahApps.Metro.1.6.0-alpha004\lib\net45\System.Windows.Interactivity.dll">
+      <Link>Assemblies\System.Windows.Interactivity.dll</Link>
+    </EmbeddedResource>
+    <EmbeddedResource Include="..\packages\Prism.Core.6.3.0\lib\net45\Prism.dll">
+      <Link>Assemblies\Prism.dll</Link>
+    </EmbeddedResource>
+    <EmbeddedResource Include="..\packages\Zodiacon.WPF.1.2.9\lib\net45\Zodiacon.WPF.dll">
+      <Link>Assemblies\Zodiacon.WPF.dll</Link>
+    </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="NativeBinaries\DbgHelp.dll" />
+    <EmbeddedResource Include="NativeBinaries\SymSrv.dll" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
