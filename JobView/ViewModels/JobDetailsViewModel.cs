@@ -34,17 +34,9 @@ namespace JobView.ViewModels {
 		public JobObjectViewModel Job {
 			get { return _job; }
 			set {
-				if (_job != null) {
-					_jobHadle.Dispose();
-					_jobHadle = null;
-				}
 				SetProperty(ref _job, value);
 
-				if (_job != null) {
-					// open a handle to the job
-					_jobHadle = _mainViewModel.Driver.OpenHandle(_job.Job.Address, (int)JobAccessMask.Query);
-
-				}
+				_jobHadle = _job?.Job.Handle;
 
 				_processes = null;
 
@@ -56,11 +48,15 @@ namespace JobView.ViewModels {
 				RaisePropertyChanged(nameof(ParentJob));
 				RaisePropertyChanged(nameof(Processes));
 				RaisePropertyChanged(nameof(JobInformation));
+				RaisePropertyChanged(nameof(JobId));
 			}
 		}
 
 		public string Name => _job?.Name;
 		public ulong? Address => _job?.Address;
+
+		public int? JobId => _job?.JobId;
+
 		public IList<JobObjectViewModel> ChildJobs => _job?.ChildJobs;
 		public JobObjectViewModel ParentJob => _job == null || _job.ParentJob == null ? null : _mainViewModel.GetJobByAddress(_job.ParentJob.Address);
 

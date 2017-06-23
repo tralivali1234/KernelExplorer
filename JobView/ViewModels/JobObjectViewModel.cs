@@ -7,7 +7,7 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace JobView.ViewModels {
-	class JobObjectViewModel : BindableBase {
+	class JobObjectViewModel : BindableBase, IDisposable {
 		public JobObject Job { get; }
 
 		public JobObjectViewModel(JobObject job) {
@@ -62,5 +62,10 @@ namespace JobView.ViewModels {
 			}
 		}
 
+		public int JobId => Job.JobId;
+
+		public void Dispose() {
+			Job.Dispose();
+		}
 	}
 }

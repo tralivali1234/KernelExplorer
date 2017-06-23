@@ -62,9 +62,8 @@ namespace JobView.ViewModels {
 							Verb = "runas"
 						};
 						Process.Start(startInfo);
-						Application.Current.Shutdown();
-						return;
 					}
+					Application.Current.Shutdown();
 				}
 			}
 			catch (Exception ex) {
