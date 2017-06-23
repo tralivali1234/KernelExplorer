@@ -81,6 +81,10 @@ NTSTATUS KExploreDeviceControl(PDEVICE_OBJECT, PIRP Irp) {
 
     case KEXPLORE_IOCTL_ENUM_JOBS: {
         if (g_KernelFunctions.PspGetNextJob == nullptr) {
+            if(stack->Parameters.DeviceIoControl.InputBufferLength < sizeof(PVOID)) {
+                status = STATUS_INVALID_BUFFER_SIZE;
+                break;
+            }
             g_KernelFunctions.PspGetNextJob = static_cast<FPspGetNextJob>(*(void**)(Irp->AssociatedIrp.SystemBuffer));
         }
         auto PspGetNextJob = g_KernelFunctions.PspGetNextJob;
@@ -108,6 +112,10 @@ NTSTATUS KExploreDeviceControl(PDEVICE_OBJECT, PIRP Irp) {
     }
 
     case KEXPLORE_IOCTL_OPEN_OBJECT_HANDLE: {
+        if(stack->Parameters.DeviceIoControl.InputBufferLength < sizeof(OpenHandleData)) {
+            status = STATUS_INVALID_BUFFER_SIZE;
+            break;
+        }
         HANDLE hObject = nullptr;
         auto data = static_cast<OpenHandleData*>(Irp->AssociatedIrp.SystemBuffer);
         status = ObOpenObjectByPointer(data->Object, 0, nullptr, data->AccessMask, nullptr, KernelMode, &hObject);
@@ -119,11 +127,17 @@ NTSTATUS KExploreDeviceControl(PDEVICE_OBJECT, PIRP Irp) {
     }
 
     case KEXPLORE_IOCTL_READ_MEMORY: {
+        if(stack->Parameters.DeviceIoControl.InputBufferLength < sizeof(PVOID)) {
+            status = STATUS_INVALID_BUFFER_SIZE;
+            break;
+        }
+
         auto memory = *static_cast<void**>(Irp->AssociatedIrp.SystemBuffer);
         auto size = stack->Parameters.Read.Length;
         auto data = MmGetSystemAddressForMdlSafe(Irp->MdlAddress, NormalPagePriority);
         if(data == nullptr) {
             status = STATUS_INSUFFICIENT_RESOURCES;
+            KdPrint((DRIVER_PREFIX "failed in MmgetSystemAddressForMdlSafe\n"));
             break;
         }
 
@@ -134,11 +148,16 @@ NTSTATUS KExploreDeviceControl(PDEVICE_OBJECT, PIRP Irp) {
     }
 
     case KEXPLORE_IOCTL_WRITE_MEMORY: {
+        if(stack->Parameters.DeviceIoControl.InputBufferLength < sizeof(PVOID)) {
+            status = STATUS_INVALID_BUFFER_SIZE;
+            break;
+        }
         auto memory = *static_cast<void**>(Irp->AssociatedIrp.SystemBuffer);
         auto size = stack->Parameters.Read.Length;
         auto data = MmGetSystemAddressForMdlSafe(Irp->MdlAddress, NormalPagePriority);
         if(data == nullptr) {
             status = STATUS_INSUFFICIENT_RESOURCES;
+            KdPrint((DRIVER_PREFIX "failed in MmgetSystemAddressForMdlSafe\n"));
             break;
         }
 
