@@ -27,6 +27,8 @@ namespace JobView.ViewModels {
 
 		public IDictionary<UIntPtr, JobObjectViewModel> Jobs => _jobs;
 
+		public ICollection<JobObjectViewModel> JobList => _jobs.Values;
+
 		public DriverInterface Driver => _driver;
 
 		public JobDetailsViewModel JobDetails { get; }
@@ -113,12 +115,13 @@ namespace JobView.ViewModels {
 				_jobs = _jobManager.AllJobs.Select(job => new JobObjectViewModel(job)).ToDictionary(job => job.Job.Address);
 				_rootJobs = _jobs.Values.Where(job => job.ParentJob == null).ToList();
 				foreach (var job in _jobs.Values.Where(job => job.Job.ChildJobs != null)) {
-					job.ChildJobs = job.Job.ChildJobs.Select(child => new JobObjectViewModel(child)).ToList();
+					job.ChildJobs = job.Job.ChildJobs.Select(child => _jobs[child.Address]).ToList();
 				}
 			});
 
 			RaisePropertyChanged(nameof(RootJobs));
 			RaisePropertyChanged(nameof(ActiveProcessesInJob));
+			RaisePropertyChanged(nameof(JobList));
 			IsBusy = false;
 			SelectedJob = null;
 		}
@@ -134,10 +137,13 @@ namespace JobView.ViewModels {
 			set {
 				if (SetProperty(ref _selectedJob, value)) {
 					JobDetails.Job = value;
-					_selectedJob.IsSelected = true;
+					if (_selectedJob != null)
+						_selectedJob.IsSelected = true;
 				}
 			}
 		}
+
+		public ICommand GotoJobCommand => new DelegateCommand<JobObject>(job => SelectedJob = _jobs[job.Address]);
 
 		public int ActiveProcessesInJob => _jobs.Values.Sum(j => j.ProcessCount);
 

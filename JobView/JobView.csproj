@@ -45,7 +45,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="DebugHelp, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\DebugHelp.0.3.0\lib\net40\DebugHelp.dll</HintPath>
+      <HintPath>..\packages\DebugHelp.0.3.2\lib\net40\DebugHelp.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="MahApps.Metro, Version=1.6.0.0, Culture=neutral, processorArchitecture=MSIL">
@@ -76,8 +76,8 @@
     <Reference Include="WindowsBase" />
     <Reference Include="PresentationCore" />
     <Reference Include="PresentationFramework" />
-    <Reference Include="Zodiacon.WPF, Version=1.1.6380.23201, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Zodiacon.WPF.1.2.9\lib\net45\Zodiacon.WPF.dll</HintPath>
+    <Reference Include="Zodiacon.WPF, Version=1.1.6386.16929, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Zodiacon.WPF.1.2.12\lib\net45\Zodiacon.WPF.dll</HintPath>
       <Private>False</Private>
     </Reference>
   </ItemGroup>
@@ -99,6 +99,12 @@
     <Compile Include="Views\JobDetailsView.xaml.cs">
       <DependentUpon>JobDetailsView.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Views\JobListView.xaml.cs">
+      <DependentUpon>JobListView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\JobTreeView.xaml.cs">
+      <DependentUpon>JobTreeView.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Views\MainView.xaml.cs">
       <DependentUpon>MainView.xaml</DependentUpon>
     </Compile>
@@ -114,7 +120,19 @@
       <DependentUpon>MainWindow.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
+    <Page Include="Resources\Templates.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="Views\JobDetailsView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\JobListView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\JobTreeView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -154,7 +172,11 @@
   <ItemGroup>
     <None Include="App.config" />
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <EmbeddedResource Include="Assemblies\DebugHelp.dll" />
+    <Resource Include="Icons\list.ico" />
+    <Resource Include="Icons\tree.ico" />
+  </ItemGroup>
   <ItemGroup>
     <Resource Include="Icons\rootjob.ico" />
   </ItemGroup>
@@ -177,9 +199,6 @@
     <Resource Include="Icons\job_plus.ico" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="..\packages\DebugHelp.0.3.0\lib\net40\DebugHelp.dll">
-      <Link>Assemblies\DebugHelp.dll</Link>
-    </EmbeddedResource>
     <EmbeddedResource Include="..\packages\MahApps.Metro.1.6.0-alpha004\lib\net45\MahApps.Metro.dll">
       <Link>Assemblies\MahApps.Metro.dll</Link>
     </EmbeddedResource>
@@ -189,13 +208,15 @@
     <EmbeddedResource Include="..\packages\Prism.Core.6.3.0\lib\net45\Prism.dll">
       <Link>Assemblies\Prism.dll</Link>
     </EmbeddedResource>
-    <EmbeddedResource Include="..\packages\Zodiacon.WPF.1.2.9\lib\net45\Zodiacon.WPF.dll">
-      <Link>Assemblies\Zodiacon.WPF.dll</Link>
-    </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="NativeBinaries\DbgHelp.dll" />
     <EmbeddedResource Include="NativeBinaries\SymSrv.dll" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="..\packages\Zodiacon.WPF.1.2.12\lib\net45\Zodiacon.WPF.dll">
+      <Link>Assemblies\Zodiacon.WPF.dll</Link>
+    </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

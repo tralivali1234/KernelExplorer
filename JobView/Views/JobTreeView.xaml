@@ -1,0 +1,51 @@
+﻿<UserControl x:Class="JobView.Views.JobTreeView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:JobView.Views"
+             xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity"
+             xmlns:z="http://zodiacon.wpf/2016"
+             mc:Ignorable="d" 
+             d:DesignHeight="300" d:DesignWidth="300" FontWeight="Normal">
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition />
+            <ColumnDefinition Width="3*" />
+        </Grid.ColumnDefinitions>
+        <TreeView ItemsSource="{Binding RootJobs}"  VirtualizingPanel.IsVirtualizing="True">
+            <TreeView.ItemContainerStyle>
+                <Style TargetType="TreeViewItem">
+                    <Setter Property="IsExpanded" Value="{Binding IsExpanded, Mode=TwoWay, Delay=200}" />
+                    <Setter Property="IsSelected" Value="{Binding IsSelected, Mode=TwoWay, Delay=200}" />
+                    <Style.Triggers>
+                        <Trigger Property="IsSelected" Value="True">
+                            <Setter Property="z:SelectedItemHelper.BringIntoViewWhenSelected" Value="True" />
+                        </Trigger>
+                    </Style.Triggers>
+                </Style>
+            </TreeView.ItemContainerStyle>
+            <i:Interaction.Behaviors>
+                <z:TreeViewSelectedItemBehavior SelectedItem="{Binding SelectedJob, Mode=TwoWay}" />
+            </i:Interaction.Behaviors>
+            <TreeView.ItemTemplate>
+                <HierarchicalDataTemplate ItemsSource="{Binding ChildJobs}">
+                    <StackPanel Orientation="Horizontal">
+                        <Image Source="{Binding Icon, Mode=OneWay}" Width="20" Height="20" />
+                        <TextBlock Margin="4,0,0,0" VerticalAlignment="Center">
+                                <Run Text="{Binding Address, StringFormat=X, Mode=OneTime}" />
+                                <Span>    </Span>
+                                <Run Text="{Binding ProcessCount, StringFormat=(\{0\}), Mode=OneWay}" />
+                        </TextBlock>
+                        <TextBlock Text="{Binding Name}" FontWeight="Bold" Margin="4,0,0,0" VerticalAlignment="Center" />
+                    </StackPanel>
+                </HierarchicalDataTemplate>
+            </TreeView.ItemTemplate>
+        </TreeView>
+        <local:JobDetailsView Grid.Column="1" Grid.Row="1" DataContext="{Binding JobDetails}">
+        </local:JobDetailsView>
+        <GridSplitter Background="Black" Width="2" HorizontalAlignment="Right" VerticalAlignment="Stretch" Margin="-1,0"
+                      Grid.Row="1"/>
+
+    </Grid>
+</UserControl>

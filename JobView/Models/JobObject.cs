@@ -39,5 +39,7 @@ namespace JobView.Models {
 		public IReadOnlyList<JobObject> ChildJobs => _childJobs;
 
 		public int JobId { get; internal set; }
+
+		public ulong AddressAsUlong => (ulong)Address;
 	}
 }

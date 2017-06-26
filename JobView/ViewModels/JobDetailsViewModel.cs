@@ -25,7 +25,7 @@ namespace JobView.ViewModels {
 
 			GoToJobCommand = new DelegateCommand<JobObjectViewModel>(async job => {
 				await Dispatcher.CurrentDispatcher.InvokeAsync(() => _job.IsExpanded = true);
-				job.IsSelected = true;
+				_mainViewModel.SelectedJob = job;
 			});
 		}
 
@@ -58,7 +58,7 @@ namespace JobView.ViewModels {
 		public int? JobId => _job?.JobId;
 
 		public IList<JobObjectViewModel> ChildJobs => _job?.ChildJobs;
-		public JobObjectViewModel ParentJob => _job == null || _job.ParentJob == null ? null : _mainViewModel.GetJobByAddress(_job.ParentJob.Address);
+		public JobObjectViewModel ParentJob => _job?.ParentJob == null ? null : _mainViewModel.GetJobByAddress(_job.ParentJob.Address);
 
 		ProcessViewModel[] _processes;
 		public unsafe ProcessViewModel[] Processes {

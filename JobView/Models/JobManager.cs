@@ -25,7 +25,7 @@ namespace JobView.Models {
 					var types = handler.EnumTypes(address, "_ejob");
 					Debug.Assert(types != null && types.Count == 1);
 
-					_ejobDescription = handler.BuildStructDescription(address, types[0]);
+					_ejobDescription = handler.BuildStructDescription(address, types[0].TypeIndex);
 				}
 			}
 		}

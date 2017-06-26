@@ -20,8 +20,10 @@ namespace JobView.Models {
 		ulong _ntoskrnlBase;
 		UIntPtr _kernelAddress;
 
+		public const string DriverName = "KExplore";
+		 
 		public DriverInterface() {
-			_hDevice = CreateFile(@"\\.\KExplore", FileAccessMask.GenericRead | FileAccessMask.GenericWrite, FileShareMode.Read,
+			_hDevice = CreateFile(@"\\.\" + DriverName, FileAccessMask.GenericRead | FileAccessMask.GenericWrite, FileShareMode.Read,
 				IntPtr.Zero, CreationDisposition.OpenExisting, CreateFileFlags.None, IntPtr.Zero);
 			if (_hDevice.IsInvalid) {
 				throw new Win32Exception(Marshal.GetLastWin32Error());
@@ -41,7 +43,7 @@ namespace JobView.Models {
 			data.Object = address;
 			data.AccessMask = accessMask;
 
-			NativeMethods.DeviceIoControl(_hDevice, NativeMethods.KExploreOpenHandle,
+			DeviceIoControl(_hDevice, KExploreOpenHandle,
 				ref data, Marshal.SizeOf<OpenHandleData>(),
 				out handle, IntPtr.Size, out returned);
 			return new SafeFileHandle(handle, true);
@@ -49,7 +51,7 @@ namespace JobView.Models {
 
 		public static void GetKernelAddress(out UIntPtr address) {
 			int needed;
-			NativeMethods.EnumDeviceDrivers(out address, UIntPtr.Size, out needed);
+			EnumDeviceDrivers(out address, UIntPtr.Size, out needed);
 		}
 
 		public unsafe UIntPtr[] EnumJobs() {
@@ -103,7 +105,7 @@ namespace JobView.Models {
 			}
 			return controller.Status;
 		}
-
+		 
 		public static async Task<bool> InstallDriverAsync(string drivername, string driverpath) {
 			await Task.Run(() => {
 				var hScm = OpenSCManager(null, null, ServiceAccessMask.AllAccess);

@@ -18,6 +18,8 @@ namespace JobView.ViewModels {
 		public ulong Address => Job.Address.ToUInt64();
 		public IList<JobObjectViewModel> ChildJobs { get; set; }
 
+		public int ChildJobsCount => ChildJobs == null ? 0 : ChildJobs.Count;
+
 		public string Name => Job.Name;
 
 		public string Icon {
