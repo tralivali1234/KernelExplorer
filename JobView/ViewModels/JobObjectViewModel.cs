@@ -3,8 +3,10 @@ using Prism.Mvvm;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
+using static JobView.NativeMethods;
 
 namespace JobView.ViewModels {
 	class JobObjectViewModel : BindableBase, IDisposable {
@@ -65,6 +67,20 @@ namespace JobView.ViewModels {
 		}
 
 		public int JobId => Job.JobId;
+
+		public unsafe JobObjectInformation JobInformation {
+			get {
+				JobBasicAccoutingInformation info1;
+				QueryInformationJobObject(Job.Handle.DangerousGetHandle(), JobInformationClass.BasicAccountingInformation, out info1, Marshal.SizeOf<JobBasicAccoutingInformation>());
+				return new JobObjectInformation {
+					TotalProcesses = info1.TotalProcesses,
+					ActiveProcesses = info1.ActiveProcesses,
+					TerminatedProcesses = info1.TotalTerminatedProcesses,
+					TotalKernelTime = TimeSpan.FromTicks(info1.TotalKernelTime),
+					TotalUserTime = TimeSpan.FromTicks(info1.TotalUserTime)
+				};
+			}
+		}
 
 		public void Dispose() {
 			Job.Dispose();

@@ -80,21 +80,7 @@ namespace JobView.ViewModels {
 			}
 		}
 
-		public unsafe JobObjectInformation JobInformation {
-			get {
-				if (_job == null)
-					return null;
+		public JobObjectInformation JobInformation => _job?.JobInformation;
 
-				JobBasicAccoutingInformation info1;
-				QueryInformationJobObject(_jobHadle.DangerousGetHandle(), JobInformationClass.BasicAccountingInformation, out info1, Marshal.SizeOf<JobBasicAccoutingInformation>());
-				return new JobObjectInformation {
-					TotalProcesses = info1.TotalProcesses,
-					ActiveProcesses = info1.ActiveProcesses,
-					TerminatedProcesses = info1.TotalTerminatedProcesses,
-					TotalKernelTime = TimeSpan.FromTicks(info1.TotalKernelTime),
-					TotalUserTime = TimeSpan.FromTicks(info1.TotalUserTime)
-				};
-			}
-		}
 	}
 }

@@ -33,9 +33,9 @@
                     <StackPanel Orientation="Horizontal">
                         <Image Source="{Binding Icon, Mode=OneWay}" Width="20" Height="20" />
                         <TextBlock Margin="4,0,0,0" VerticalAlignment="Center">
-                                <Run Text="{Binding Address, StringFormat=X, Mode=OneTime}" />
-                                <Span>    </Span>
-                                <Run Text="{Binding ProcessCount, StringFormat=(\{0\}), Mode=OneWay}" />
+                            <Run Text="{Binding Address, StringFormat=X, Mode=OneTime}" />
+                            <Span>    </Span>
+                            <Run Text="{Binding ProcessCount, StringFormat=(\{0\}), Mode=OneWay}" />
                         </TextBlock>
                         <TextBlock Text="{Binding Name}" FontWeight="Bold" Margin="4,0,0,0" VerticalAlignment="Center" />
                     </StackPanel>

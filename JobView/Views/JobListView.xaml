@@ -21,14 +21,28 @@
             <RowDefinition />
         </Grid.RowDefinitions>
         <DataGrid ItemsSource="{Binding JobList}" IsReadOnly="True" AutoGenerateColumns="False" metro:ButtonHelper.PreserveTextCase="True" 
-                  SelectionMode="Single" SelectedItem="{Binding SelectedJob, Mode=TwoWay}" z:SelectedItemHelper.EnsureSelectedVisible="True">
+                  SelectionMode="Single" SelectedItem="{Binding SelectedJob, Mode=TwoWay}" z:SelectedItemHelper.BringIntoViewWhenSelected="True">
             <DataGrid.Columns>
                 <DataGridTextColumn Header="Address" Binding="{Binding Address, StringFormat=0x\{0:X\}, Mode=OneTime}" ElementStyle="{StaticResource CenterText}" />
                 <DataGridTextColumn Header="ID" Binding="{Binding JobId}" ElementStyle="{StaticResource CenterText}" />
                 <DataGridTextColumn Header="Name" Binding="{Binding Name}" MinWidth="100" FontWeight="Bold" />
                 <DataGridTextColumn Header="Child Jobs" Binding="{Binding ChildJobsCount}" ElementStyle="{StaticResource CenterText}" />
                 <DataGridTextColumn Header="Processes" Binding="{Binding ProcessCount}" ElementStyle="{StaticResource CenterText}" />
-                <DataGridTextColumn Header="Parent Job" Binding="{Binding ParentJob.AddressAsUlong, StringFormat=0x\{0:X\}}" />
+                <DataGridTemplateColumn Header="Parent Job">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <TextBlock>
+                                <Hyperlink Command="{Binding Data.GotoJobCommand, Source={StaticResource Proxy}}" CommandParameter="{Binding ParentJob}">
+                                    <Run Text="{Binding ParentJob.AddressAsUlong, StringFormat=0x\{0:X\}, Mode=OneTime}" />
+                                </Hyperlink>
+                                <Span>    </Span>
+                                <Run Text="{Binding ParentJob.JobId, Mode=OneTime, StringFormat=(\{0\})}" />
+                            </TextBlock>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+                <DataGridTextColumn Header="User Time" Binding="{Binding JobInformation.TotalUserTime}" />
+                <DataGridTextColumn Header="Kernel Time" Binding="{Binding JobInformation.TotalKernelTime}" />
             </DataGrid.Columns>
         </DataGrid>
         <local:JobDetailsView Grid.Row="1" DataContext="{Binding JobDetails}" />
