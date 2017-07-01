@@ -70,16 +70,25 @@ namespace JobView {
 			LoadNativeModules();
 		}
 
+		MainViewModel _mainViewModel;
+
 		protected override void OnStartup(StartupEventArgs e) {
 			base.OnStartup(e);
 
 			IUIServices ui = new UIServicesDefaults();
 			var win = new MainWindow();
 			ui.MessageBoxService.SetOwner(win);
-			var vm = new MainViewModel(ui);
-			win.DataContext = vm;
+			_mainViewModel = new MainViewModel(ui);
+			if (_mainViewModel.IsInitialized) {
+				win.DataContext = _mainViewModel;
+				win.Show();
+			}
+		}
 
-			win.Show();
+		protected override void OnExit(ExitEventArgs e) {
+			base.OnExit(e);
+
+			_mainViewModel.Dispose();
 		}
 	}
 }

@@ -89,7 +89,7 @@ NTSTATUS KExploreDeviceControl(PDEVICE_OBJECT, PIRP Irp) {
 		}
 		auto PspGetNextJob = g_KernelFunctions.PspGetNextJob;
 		if (PspGetNextJob == nullptr) {
-			status = STATUS_INVALID_ADDRESS;
+			status = STATUS_NOT_FOUND;
 			KdPrint((DRIVER_PREFIX "Missing PspGetNextJob function\n"));
 			break;
 		}
@@ -246,6 +246,60 @@ NTSTATUS KExploreDeviceControl(PDEVICE_OBJECT, PIRP Irp) {
 		// unattach
 		KeUnstackDetachProcess(&apcState);
 		ObDereferenceObject(targetProcess);
+		break;
+	}
+
+	case KEXPLORE_IOCTL_INIT_KERNEL_FUNCTIONS: {
+		auto size = stack->Parameters.DeviceIoControl.InputBufferLength;
+		if(size == 0 || size % sizeof(PVOID) != 0) {
+			status = STATUS_INVALID_BUFFER_SIZE;
+			break;
+		}
+
+		len = min(size, sizeof(KernelFunctions));
+		RtlCopyMemory(&g_KernelFunctions, Irp->AssociatedIrp.SystemBuffer, len);
+		break;
+	}
+	
+	case KEXPLORE_IOCTL_ENUM_PROCESSES: {
+		auto PsGetNextProcess = g_KernelFunctions.PsGetNextProcess;
+		if(PsGetNextProcess == nullptr) {
+			status = STATUS_NOT_FOUND;
+			break;
+		}
+
+		auto size = stack->Parameters.DeviceIoControl.OutputBufferLength;
+		if(size == 0) {
+			status = STATUS_INVALID_BUFFER_SIZE;
+			break;
+		}
+
+		auto output = static_cast<void**>(Irp->AssociatedIrp.SystemBuffer);
+		int count = 0;
+		for (auto process = PsGetNextProcess(nullptr); process; process = PsGetNextProcess(process)) {
+			if (size >= sizeof(process)) {
+				output[count++] = process;
+				size -= sizeof(process);
+			}
+		}
+
+		len = count * sizeof(PVOID);
+		if (count * sizeof(PVOID) > size)
+			status = STATUS_MORE_ENTRIES;
+		break;
+	}
+
+	case KEXPLORE_IOCTL_DEREFERENCE_OBJECTS: {
+		auto size = stack->Parameters.DeviceIoControl.InputBufferLength;
+		if(size == 0 || size % sizeof(PVOID) != 0) {
+			status = STATUS_INVALID_BUFFER_SIZE;
+			break;
+		}
+		auto objects = static_cast<void**>(Irp->AssociatedIrp.SystemBuffer);
+		for(int i = 0; i < size / sizeof(PVOID); i++) {
+			ObDereferenceObject(objects[i]);
+		}
+		len = size;
 		break;
 	}
 

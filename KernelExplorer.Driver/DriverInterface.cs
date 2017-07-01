@@ -6,14 +6,13 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.Linq;
 using System.Runtime.InteropServices;
-using System.Security.Principal;
 using System.ServiceProcess;
 using System.Text;
 using System.Threading.Tasks;
-using static JobView.NativeMethods;
+using static KernelExplorer.Driver.NativeMethods;
 
-namespace JobView.Models {
-	class DriverInterface : IDisposable {
+namespace KernelExplorer.Driver {
+	public sealed class DriverInterface : IDisposable {
 		SafeFileHandle _hDevice;
 		SymbolHandler _symbolHandler;
 		UIntPtr _PspGetNextJob;
@@ -21,7 +20,7 @@ namespace JobView.Models {
 		UIntPtr _kernelAddress;
 
 		public const string DriverName = "KExplore";
-		 
+
 		public DriverInterface() {
 			_hDevice = CreateFile(@"\\.\" + DriverName, FileAccessMask.GenericRead | FileAccessMask.GenericWrite, FileShareMode.Read,
 				IntPtr.Zero, CreationDisposition.OpenExisting, CreateFileFlags.None, IntPtr.Zero);
@@ -105,7 +104,7 @@ namespace JobView.Models {
 			}
 			return controller.Status;
 		}
-		 
+
 		public static async Task<bool> InstallDriverAsync(string drivername, string driverpath) {
 			await Task.Run(() => {
 				var hScm = OpenSCManager(null, null, ServiceAccessMask.AllAccess);
@@ -131,10 +130,6 @@ namespace JobView.Models {
 			});
 
 			return true;
-		}
-
-		public unsafe bool DereferenceObjects(UIntPtr[] objects) {
-			return DeviceIoControl(_hDevice, KExploreDereferenceObjects, objects, objects.Length * IntPtr.Size, IntPtr.Zero, 0, out var returned);
 		}
 
 		public void Dispose() {

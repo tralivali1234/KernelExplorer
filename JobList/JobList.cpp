@@ -166,7 +166,8 @@ int main(int argc, char* argv[]) {
                 printf("Error opening job %i: %d\n", i, GetLastError());
             }
         }
-
+		// dereference job objects
+		::DeviceIoControl(hDevice, KEXPLORE_IOCTL_DEREFERENCE_OBJECTS, jobs, countJobs * sizeof(PVOID), nullptr, 0, &returned, nullptr);
 
         ::CloseHandle(hDevice);
 

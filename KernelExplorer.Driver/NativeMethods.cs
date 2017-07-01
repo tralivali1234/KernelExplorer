@@ -8,10 +8,9 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace JobView {
-
+namespace KernelExplorer.Driver {
 	[SuppressUnmanagedCodeSecurity]
-	static class NativeMethods {
+	public static class NativeMethods {
 		[StructLayout(LayoutKind.Sequential)]
 		public unsafe struct UnicodeString {
 			ushort Length;
@@ -21,6 +20,15 @@ namespace JobView {
 
 		public enum JobAccessMask {
 			Query = 4
+		}
+
+		public enum ProcessAccessMask {
+		}
+
+		[StructLayout(LayoutKind.Sequential)]
+		struct KernelFunctions {
+			public IntPtr PspGetNextJob;
+			public IntPtr PsGetNextProcess;
 		}
 
 		const int DeviceType = 0x22;
@@ -40,7 +48,7 @@ namespace JobView {
 		public static readonly int KExploreEnumJobs = ControlCode(DeviceType, 0x903, MethodBufferred, FileReadAccess);
 		public static readonly int KExploreOpenHandle = ControlCode(DeviceType, 0x905, MethodBufferred, FileReadAccess);
 		public static readonly int KExploreReadMemory = ControlCode(DeviceType, 0x901, MethodOutDirect, FileReadAccess);
-		public static readonly int KExploreDereferenceObjects = ControlCode(DeviceType, 0x90b, MethodBufferred, FileWriteAccess);
+		public static readonly int KExploreInitFunctions = ControlCode(DeviceType, 0x9a, MethodBufferred, FileWriteAccess);
 
 		[StructLayout(LayoutKind.Sequential)]
 		public struct OpenHandleData {
@@ -52,12 +60,6 @@ namespace JobView {
 		public unsafe static extern bool DeviceIoControl(SafeFileHandle hDevice, int controlCode,
 			ref UIntPtr PspGetNextJob, int inputSize,
 			UIntPtr[] output, int outputSize,
-			out int returned, NativeOverlapped* overlapped = null);
-
-		[DllImport("kernel32", CharSet = CharSet.Unicode, SetLastError = true)]
-		public unsafe static extern bool DeviceIoControl(SafeFileHandle hDevice, int controlCode,
-			[MarshalAs(UnmanagedType.LPArray)] UIntPtr[] objects, int inputSize,
-			IntPtr output, int outputSize,
 			out int returned, NativeOverlapped* overlapped = null);
 
 		[DllImport("kernel32", CharSet = CharSet.Unicode, SetLastError = true)]

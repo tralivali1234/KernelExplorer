@@ -23,11 +23,12 @@ namespace JobView.ViewModels {
 		DriverInterface _driver;
 		List<JobObjectViewModel> _rootJobs;
 		Dictionary<UIntPtr, JobObjectViewModel> _jobs;
-		readonly IUIServices UI;
+		public readonly IUIServices UI;
+		public readonly bool IsInitialized;
 
 		public IDictionary<UIntPtr, JobObjectViewModel> Jobs => _jobs;
 
-		public ICollection<JobObjectViewModel> JobList => _jobs.Values;
+		public ICollection<JobObjectViewModel> JobList => _jobs?.Values;
 
 		public DriverInterface Driver => _driver;
 
@@ -36,19 +37,26 @@ namespace JobView.ViewModels {
 		public MainViewModel(IUIServices ui) {
 			UI = ui;
 			Thread.CurrentThread.Priority = ThreadPriority.Highest;
-			_jobManager = new JobManager();
-			JobDetails = new JobDetailsViewModel(this);
 
 			Init();
+
+			if (_driver != null) {
+
+				_jobManager = new JobManager(_driver);
+				JobDetails = new JobDetailsViewModel(this);
+
+				IsInitialized = true;
+
+#pragma warning disable CS4014 // Because this call is not awaited, execution of the current method continues before the call is completed
+				Refresh();
+#pragma warning restore CS4014 // Because this call is not awaited, execution of the current method continues before the call is completed
+
+			}
 		}
 
 		async void Init() {
 			try {
 				_driver = new DriverInterface();
-
-#pragma warning disable CS4014 // Because this call is not awaited, execution of the current method continues before the call is completed
-				Refresh();
-#pragma warning restore CS4014 // Because this call is not awaited, execution of the current method continues before the call is completed
 			}
 			catch (Win32Exception ex) when (ex.NativeErrorCode == 2) {
 				// driver not loaded or not installed
@@ -91,7 +99,10 @@ namespace JobView.ViewModels {
 		}
 
 		public void Dispose() {
-			_driver.Dispose();
+			if (_jobManager != null)
+				_jobManager.Dispose();
+			if (_driver != null)
+				_driver.Dispose();
 		}
 
 		public IEnumerable<JobObjectViewModel> RootJobs => _rootJobs;
@@ -111,7 +122,7 @@ namespace JobView.ViewModels {
 			IsBusy = true;
 
 			await Task.Run(() => {
-				_jobManager.BuildJobTree(_driver);
+				_jobManager.BuildJobTree();
 				_jobs = _jobManager.AllJobs.Select(job => new JobObjectViewModel(job)).ToDictionary(job => job.Job.Address);
 				_rootJobs = _jobs.Values.Where(job => job.ParentJob == null).ToList();
 				foreach (var job in _jobs.Values.Where(job => job.Job.ChildJobs != null)) {
