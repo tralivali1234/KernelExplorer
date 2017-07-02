@@ -11,7 +11,7 @@ namespace JobView.Models {
 	class JobObject : IDisposable {
 		List<JobObject> _childJobs;
 
-		public readonly SafeFileHandle Handle;
+		public readonly IntPtr Handle;
 
 		public UIntPtr Address { get; }
 		public string Name { get; }
@@ -19,7 +19,7 @@ namespace JobView.Models {
 
 		public JobObject Parent { get; internal set; }
 
-		public JobObject(SafeFileHandle hJob, UIntPtr address, string name, int processCount) {
+		public JobObject(IntPtr hJob, UIntPtr address, string name, int processCount) {
 			Handle = hJob;
 			Address = address;
 			Name = name;
@@ -33,7 +33,12 @@ namespace JobView.Models {
 		}
 
 		public void Dispose() {
-			Handle.Close();
+			NativeMethods.CloseHandle(Handle);
+			GC.SuppressFinalize(this);
+		}
+
+		~JobObject() {
+			NativeMethods.CloseHandle(Handle);
 		}
 
 		public IReadOnlyList<JobObject> ChildJobs => _childJobs;

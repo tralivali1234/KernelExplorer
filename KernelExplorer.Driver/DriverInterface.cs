@@ -34,20 +34,6 @@ namespace KernelExplorer.Driver {
 			GetKernelAddress(out _kernelAddress);
 		}
 
-		public unsafe SafeFileHandle OpenHandle(UIntPtr address, uint accessMask) {
-			IntPtr handle = IntPtr.Zero;
-			int returned;
-
-			OpenHandleData data;
-			data.Object = address;
-			data.AccessMask = accessMask;
-
-			DeviceIoControl(_hDevice, KExploreOpenHandle,
-				ref data, Marshal.SizeOf<OpenHandleData>(),
-				out handle, IntPtr.Size, out returned);
-			return new SafeFileHandle(handle, true);
-		}
-
 		public static void GetKernelAddress(out UIntPtr address) {
 			int needed;
 			EnumDeviceDrivers(out address, UIntPtr.Size, out needed);

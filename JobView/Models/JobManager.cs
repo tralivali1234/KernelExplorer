@@ -39,8 +39,6 @@ namespace JobView.Models {
 		public ICollection<JobObject> AllJobs => _jobs.Values;
 
 		public unsafe void BuildJobTree() {
-			DereferenceJobs();
-
 			foreach (var job in _jobs.Values)
 				job.Dispose();
 
@@ -50,7 +48,7 @@ namespace JobView.Models {
 			if (_ejobDescription == null)
 				BuildEjobDescription();
 
-			var jobAddresses = _driver.EnumJobs();
+			var jobs = _driver.EnumJobs();
 			var bytes = stackalloc byte[512];
 			var pString = (UnicodeString*)bytes;
 			int status;
@@ -59,34 +57,30 @@ namespace JobView.Models {
 			int jobParentOffset = _ejobDescription.GetOffsetOf("ParentJob");
 			var jobIdBuffer = new byte[4];
 
-			foreach (var address in jobAddresses) {
-				var handle = _driver.OpenHandle(address, (int)JobAccessMask.Query);
-				if (handle.IsInvalid)
-					continue;
-
-				status = NtQueryObject(handle.DangerousGetHandle(), ObjectInformationClass.ObjectNameInformation, pString, 512);
+			foreach (var jobObject in jobs) {
+				var handle = jobObject.Handle;
+				status = NtQueryObject(handle, ObjectInformationClass.ObjectNameInformation, pString, 512);
 				processCount = GetJobProcessCount(handle);
 
-				var job = new JobObject(handle, address, status == 0 ? new string(pString->Buffer) : null, processCount);
-				if (jobIdOffset >= 0) {
-					if (_driver.ReadMemory(UIntPtr.Add(address, jobIdOffset), jobIdBuffer))
-						job.JobId = BitConverter.ToInt32(jobIdBuffer, 0);
+				var job = new JobObject(handle, jobObject.Address, status == 0 ? new string(pString->Buffer) : null, processCount);
+				if (jobIdOffset >= 0 && _driver.ReadMemory(UIntPtr.Add(jobObject.Address, jobIdOffset), jobIdBuffer)) {
+					job.JobId = BitConverter.ToInt32(jobIdBuffer, 0);
 				}
-				_jobs.Add(address, job);
+				_jobs.Add(jobObject.Address, job);
 			}
 
 			if (jobParentOffset >= 0) {
 				// nested jobs supported (Windows 8+)
 
-				foreach (var address in jobAddresses) {
+				foreach (var jobObject in jobs) {
 					// get parent job
 
-					var parentJobAddress = UIntPtr.Add(address, jobParentOffset);
+					var parentJobAddress = UIntPtr.Add(jobObject.Address, jobParentOffset);
 
 					var parentPointer = new byte[IntPtr.Size];
 					_driver.ReadMemory(parentJobAddress, parentPointer);
 					var parentAddress = new UIntPtr(BitConverter.ToUInt64(parentPointer, 0));
-					var job = _jobs[address];
+					var job = _jobs[jobObject.Address];
 					if (parentAddress != UIntPtr.Zero) {
 						var parentJob = _jobs[parentAddress];
 						job.Parent = parentJob;
@@ -100,21 +94,15 @@ namespace JobView.Models {
 
 		}
 
-		private void DereferenceJobs() {
-			if(_jobs != null)
-				_driver.DereferenceObjects(_jobs.Values.Select(job => job.Address).ToArray());
-		}
-
-		private unsafe static int GetJobProcessCount(SafeFileHandle handle) {
+		private unsafe static int GetJobProcessCount(IntPtr handle) {
 			JobBasicProcessIdList list;
-			if (QueryInformationJobObject(handle.DangerousGetHandle(), JobInformationClass.BasicProcessList, out list, Marshal.SizeOf<JobBasicProcessIdList>())) {
+			if (QueryInformationJobObject(handle, JobInformationClass.BasicProcessList, out list, Marshal.SizeOf<JobBasicProcessIdList>())) {
 				return list.ProcessesInList;
 			}
 			return 0;
 		}
 
 		public void Dispose() {
-			DereferenceJobs();
 			foreach (var job in _jobs.Values)
 				job.Dispose();
 		}

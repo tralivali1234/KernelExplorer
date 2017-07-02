@@ -16,9 +16,9 @@ namespace JobView.Models {
 	class DriverInterface : IDisposable {
 		SafeFileHandle _hDevice;
 		SymbolHandler _symbolHandler;
-		UIntPtr _PspGetNextJob;
 		ulong _ntoskrnlBase;
 		UIntPtr _kernelAddress;
+		static bool _initialized;
 
 		public const string DriverName = "KExplore";
 		 
@@ -33,20 +33,7 @@ namespace JobView.Models {
 			if (_ntoskrnlBase == 0)
 				throw new Win32Exception(Marshal.GetLastWin32Error());
 			GetKernelAddress(out _kernelAddress);
-		}
 
-		public unsafe SafeFileHandle OpenHandle(UIntPtr address, uint accessMask) {
-			IntPtr handle = IntPtr.Zero;
-			int returned;
-
-			OpenHandleData data;
-			data.Object = address;
-			data.AccessMask = accessMask;
-
-			DeviceIoControl(_hDevice, KExploreOpenHandle,
-				ref data, Marshal.SizeOf<OpenHandleData>(),
-				out handle, IntPtr.Size, out returned);
-			return new SafeFileHandle(handle, true);
 		}
 
 		public static void GetKernelAddress(out UIntPtr address) {
@@ -54,39 +41,42 @@ namespace JobView.Models {
 			EnumDeviceDrivers(out address, UIntPtr.Size, out needed);
 		}
 
-		public unsafe UIntPtr[] EnumJobs() {
-			if (_PspGetNextJob == UIntPtr.Zero) {
+		public unsafe KernelObjectData[] EnumJobs() {
+			int returned;
+			if (!_initialized) {
 				var symbol = new SymbolInfo();
 				symbol.Init();
 				if (_symbolHandler.GetSymbolFromName("PspGetNextJob", ref symbol)) {
 					var offset = symbol.Address - _ntoskrnlBase;
 					Debug.Assert(_kernelAddress != UIntPtr.Zero);
-					_PspGetNextJob = new UIntPtr(_kernelAddress.ToUInt64() + offset);
+
+					var functions = new KernelFunctions {
+						PspGetNextJob = new UIntPtr(_kernelAddress.ToUInt64() + offset)
+					};
+					_initialized = DeviceIoControl(_hDevice, KExploreInitFunctions, ref functions, Marshal.SizeOf<KernelFunctions>(), 
+						IntPtr.Zero, 0, out returned);
 				}
 			}
+			if (!_initialized)
+				throw new InvalidOperationException("Failed to locate symbols");
 
-			if (_PspGetNextJob == UIntPtr.Zero)
-				return null;
-
-			var addresses = new UIntPtr[2048];       // unlikely to be more... (famous last words)
-			int returned;
+			var jobs = new KernelObjectData[2048];       // unlikely to be more... (famous last words)
+			var access = (int)JobAccessMask.Query;
 			if (DeviceIoControl(_hDevice, KExploreEnumJobs,
-				ref _PspGetNextJob, UIntPtr.Size,
-				addresses, addresses.Length * IntPtr.Size,
-				out returned)) {
-				Array.Resize(ref addresses, returned / IntPtr.Size);
-				return addresses;
+				ref access, sizeof(int),
+				ref jobs[0], jobs.Length * Marshal.SizeOf<KernelObjectData>(), out returned)) {
+				Array.Resize(ref jobs, returned / Marshal.SizeOf<KernelObjectData>());
+				return jobs;
 			}
 
 			return null;
 		}
 
 		public unsafe bool ReadMemory(UIntPtr address, byte[] buffer, int size = 0) {
-			int returned;
 			return DeviceIoControl(_hDevice, KExploreReadMemory,
 				ref address, IntPtr.Size,
 				buffer, size == 0 ? buffer.Length : size,
-				out returned);
+				out var _);
 		}
 
 		public static async Task<ServiceControllerStatus?> LoadDriverAsync(string drivername) {
@@ -131,10 +121,6 @@ namespace JobView.Models {
 			});
 
 			return true;
-		}
-
-		public unsafe bool DereferenceObjects(UIntPtr[] objects) {
-			return DeviceIoControl(_hDevice, KExploreDereferenceObjects, objects, objects.Length * IntPtr.Size, IntPtr.Zero, 0, out var returned);
 		}
 
 		public void Dispose() {

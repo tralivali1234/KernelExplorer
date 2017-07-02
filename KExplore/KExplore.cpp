@@ -80,13 +80,20 @@ NTSTATUS KExploreDeviceControl(PDEVICE_OBJECT, PIRP Irp) {
 	}
 
 	case KEXPLORE_IOCTL_ENUM_JOBS: {
-		if (g_KernelFunctions.PspGetNextJob == nullptr) {
-			if (stack->Parameters.DeviceIoControl.InputBufferLength < sizeof(PVOID)) {
-				status = STATUS_INVALID_BUFFER_SIZE;
-				break;
-			}
-			g_KernelFunctions.PspGetNextJob = static_cast<FPspGetNextJob>(*(void**)(Irp->AssociatedIrp.SystemBuffer));
+		auto size = stack->Parameters.DeviceIoControl.OutputBufferLength;
+		if (size == 0 || size % sizeof(KernelObjectData) != 0) {
+			status = STATUS_INVALID_BUFFER_SIZE;
+			break;
 		}
+
+		if (stack->Parameters.DeviceIoControl.InputBufferLength < sizeof(ACCESS_MASK)) {
+			status = STATUS_BUFFER_TOO_SMALL;
+			break;
+		}
+
+		auto buffer = Irp->AssociatedIrp.SystemBuffer;
+		auto accessMask = *static_cast<ACCESS_MASK*>(buffer);
+
 		auto PspGetNextJob = g_KernelFunctions.PspGetNextJob;
 		if (PspGetNextJob == nullptr) {
 			status = STATUS_NOT_FOUND;
@@ -94,19 +101,23 @@ NTSTATUS KExploreDeviceControl(PDEVICE_OBJECT, PIRP Irp) {
 			break;
 		}
 
-		auto size = stack->Parameters.DeviceIoControl.OutputBufferLength;
-		auto output = static_cast<void**>(Irp->AssociatedIrp.SystemBuffer);
+		auto output = static_cast<KernelObjectData*>(buffer);
 
-		int count = 0;
+		int count = 0, total = 0;
+		KernelObjectData data;
 		for (auto job = PspGetNextJob(nullptr); job; job = PspGetNextJob(job)) {
-			if (size >= sizeof(job)) {
-				output[count++] = job;
-				size -= sizeof(job);
+			total++;
+			if (size >= sizeof(data)) {
+				data.Address = job;
+				if (NT_SUCCESS(ObOpenObjectByPointer(job, 0, nullptr, accessMask, nullptr, KernelMode, &data.Handle))) {
+					output[count++] = data;
+					size -= sizeof(data);
+				}
 			}
 		}
 
-		len = count * sizeof(PVOID);
-		if (count * sizeof(PVOID) > size)
+		len = count * sizeof(KernelObjectData);
+		if (count < total)
 			status = STATUS_MORE_ENTRIES;
 		break;
 	}
@@ -123,6 +134,22 @@ NTSTATUS KExploreDeviceControl(PDEVICE_OBJECT, PIRP Irp) {
 			*(HANDLE*)data = hObject;
 			len = sizeof(HANDLE);
 		}
+		break;
+	}
+
+	case KEXPLORE_IOCTL_CLOSE_HANDLE: {
+		auto size = stack->Parameters.DeviceIoControl.InputBufferLength;
+		if (size == 0 || size % sizeof(HANDLE) != 0) {
+			status = STATUS_INVALID_BUFFER_SIZE;
+			break;
+		}
+
+		auto handles = static_cast<HANDLE*>(Irp->AssociatedIrp.SystemBuffer);
+		int count = size / sizeof(HANDLE);
+		for (int i = 0; i < count; i++) {
+			ZwClose(handles[i]);
+		}
+		len = size;
 		break;
 	}
 
@@ -178,7 +205,7 @@ NTSTATUS KExploreDeviceControl(PDEVICE_OBJECT, PIRP Irp) {
 
 		// get target process
 		status = PsLookupProcessByProcessId(reinterpret_cast<HANDLE>(data->ProcessId), &targetProcess);
-		if(!NT_SUCCESS(status))
+		if (!NT_SUCCESS(status))
 			break;
 
 		auto buffer = MmGetSystemAddressForMdlSafe(Irp->MdlAddress, NormalPagePriority);
@@ -196,12 +223,12 @@ NTSTATUS KExploreDeviceControl(PDEVICE_OBJECT, PIRP Irp) {
 			// perform the read
 			RtlCopyMemory(buffer, data->Address, len);
 		}
-		__except(EXCEPTION_EXECUTE_HANDLER) {
+		__except (EXCEPTION_EXECUTE_HANDLER) {
 			status = STATUS_ACCESS_VIOLATION;
 			len = 0;
 		}
 
-		// unattach
+		// detach
 		KeUnstackDetachProcess(&apcState);
 		ObDereferenceObject(targetProcess);
 
@@ -220,7 +247,7 @@ NTSTATUS KExploreDeviceControl(PDEVICE_OBJECT, PIRP Irp) {
 
 		// get target process
 		status = PsLookupProcessByProcessId(reinterpret_cast<HANDLE>(data->ProcessId), &targetProcess);
-		if(!NT_SUCCESS(status))
+		if (!NT_SUCCESS(status))
 			break;
 
 		auto buffer = MmGetSystemAddressForMdlSafe(Irp->MdlAddress, NormalPagePriority);
@@ -238,12 +265,12 @@ NTSTATUS KExploreDeviceControl(PDEVICE_OBJECT, PIRP Irp) {
 			// perform the write
 			RtlCopyMemory(data->Address, buffer, len);
 		}
-		__except(EXCEPTION_EXECUTE_HANDLER) {
+		__except (EXCEPTION_EXECUTE_HANDLER) {
 			status = STATUS_ACCESS_VIOLATION;
 			len = 0;
 		}
 
-		// unattach
+		// detach
 		KeUnstackDetachProcess(&apcState);
 		ObDereferenceObject(targetProcess);
 		break;
@@ -251,7 +278,7 @@ NTSTATUS KExploreDeviceControl(PDEVICE_OBJECT, PIRP Irp) {
 
 	case KEXPLORE_IOCTL_INIT_KERNEL_FUNCTIONS: {
 		auto size = stack->Parameters.DeviceIoControl.InputBufferLength;
-		if(size == 0 || size % sizeof(PVOID) != 0) {
+		if (size == 0 || size % sizeof(PVOID) != 0) {
 			status = STATUS_INVALID_BUFFER_SIZE;
 			break;
 		}
@@ -260,43 +287,55 @@ NTSTATUS KExploreDeviceControl(PDEVICE_OBJECT, PIRP Irp) {
 		RtlCopyMemory(&g_KernelFunctions, Irp->AssociatedIrp.SystemBuffer, len);
 		break;
 	}
-	
+
 	case KEXPLORE_IOCTL_ENUM_PROCESSES: {
 		auto PsGetNextProcess = g_KernelFunctions.PsGetNextProcess;
-		if(PsGetNextProcess == nullptr) {
+		if (PsGetNextProcess == nullptr) {
 			status = STATUS_NOT_FOUND;
 			break;
 		}
 
 		auto size = stack->Parameters.DeviceIoControl.OutputBufferLength;
-		if(size == 0) {
+		if (size == 0 || size % sizeof(KernelObjectData) != 0) {
 			status = STATUS_INVALID_BUFFER_SIZE;
 			break;
 		}
 
-		auto output = static_cast<void**>(Irp->AssociatedIrp.SystemBuffer);
-		int count = 0;
+		if(stack->Parameters.DeviceIoControl.InputBufferLength < sizeof(ACCESS_MASK)) {
+			status = STATUS_BUFFER_TOO_SMALL;
+			break;
+		}
+
+		auto buffer = Irp->AssociatedIrp.SystemBuffer;
+		auto accessMask = *static_cast<ACCESS_MASK*>(buffer);
+		auto output = static_cast<KernelObjectData*>(buffer);
+		int count = 0, total = 0;
+		KernelObjectData data;
 		for (auto process = PsGetNextProcess(nullptr); process; process = PsGetNextProcess(process)) {
-			if (size >= sizeof(process)) {
-				output[count++] = process;
-				size -= sizeof(process);
+			total++;
+			if (size >= sizeof(data)) {
+				data.Address = process;
+				if (NT_SUCCESS(ObOpenObjectByPointer(process, 0, nullptr, accessMask, nullptr, KernelMode, &data.Handle))) {
+					output[count++] = data;
+					size -= sizeof(data);
+				}
 			}
 		}
 
-		len = count * sizeof(PVOID);
-		if (count * sizeof(PVOID) > size)
+		len = count * sizeof(data);
+		if (count < total)
 			status = STATUS_MORE_ENTRIES;
 		break;
 	}
 
 	case KEXPLORE_IOCTL_DEREFERENCE_OBJECTS: {
 		auto size = stack->Parameters.DeviceIoControl.InputBufferLength;
-		if(size == 0 || size % sizeof(PVOID) != 0) {
+		if (size == 0 || size % sizeof(PVOID) != 0) {
 			status = STATUS_INVALID_BUFFER_SIZE;
 			break;
 		}
 		auto objects = static_cast<void**>(Irp->AssociatedIrp.SystemBuffer);
-		for(int i = 0; i < size / sizeof(PVOID); i++) {
+		for (int i = 0; i < size / sizeof(PVOID); i++) {
 			ObDereferenceObject(objects[i]);
 		}
 		len = size;

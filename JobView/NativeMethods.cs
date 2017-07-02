@@ -19,6 +19,12 @@ namespace JobView {
 			public char* Buffer;
 		}
 
+		[StructLayout(LayoutKind.Sequential)]
+		public struct KernelObjectData {
+			public UIntPtr Address;
+			public IntPtr Handle;
+		}
+
 		public enum JobAccessMask {
 			Query = 4
 		}
@@ -37,21 +43,36 @@ namespace JobView {
 		static int ControlCode(int DeviceType, int Function, int Method, int Access) =>
 			(DeviceType << 16) | (Access << 14) | (Function << 2) | Method;
 
-		public static readonly int KExploreEnumJobs = ControlCode(DeviceType, 0x903, MethodBufferred, FileReadAccess);
-		public static readonly int KExploreOpenHandle = ControlCode(DeviceType, 0x905, MethodBufferred, FileReadAccess);
-		public static readonly int KExploreReadMemory = ControlCode(DeviceType, 0x901, MethodOutDirect, FileReadAccess);
-		public static readonly int KExploreDereferenceObjects = ControlCode(DeviceType, 0x90b, MethodBufferred, FileWriteAccess);
+		public static readonly int KExploreEnumJobs =		ControlCode(DeviceType, 0x903, MethodBufferred, FileAnyAccess);
+		public static readonly int KExploreOpenHandle =		ControlCode(DeviceType, 0x905, MethodBufferred, FileAnyAccess);
+		public static readonly int KExploreReadMemory =		ControlCode(DeviceType, 0x901, MethodOutDirect, FileAnyAccess);
+		public static readonly int KExploreInitFunctions =	ControlCode(DeviceType, 0x90a, MethodBufferred, FileAnyAccess);
 
 		[StructLayout(LayoutKind.Sequential)]
 		public struct OpenHandleData {
 			public UIntPtr Object;
 			public uint AccessMask;
-		};
+		}
 
-		[DllImport("kernel32", CharSet = CharSet.Unicode, SetLastError = true)]
+		[StructLayout(LayoutKind.Sequential)]
+		public struct KernelFunctions {
+			public UIntPtr PspGetNextJob;
+			public UIntPtr PsGetNextProcess;
+		}
+
+		[DllImport("kernel32", SetLastError = true)]
+		public static extern bool CloseHandle(IntPtr handle);
+
+		[DllImport("kernel32", SetLastError = true)]
 		public unsafe static extern bool DeviceIoControl(SafeFileHandle hDevice, int controlCode,
-			ref UIntPtr PspGetNextJob, int inputSize,
-			UIntPtr[] output, int outputSize,
+			ref int access, int inputSize,
+			ref KernelObjectData output, int outputSize,
+			out int returned, NativeOverlapped* overlapped = null);
+
+		[DllImport("kernel32", SetLastError = true)]
+		public unsafe static extern bool DeviceIoControl(SafeFileHandle hDevice, int controlCode,
+			ref KernelFunctions functions, int inputSize,
+			IntPtr output, int outputSize,
 			out int returned, NativeOverlapped* overlapped = null);
 
 		[DllImport("kernel32", CharSet = CharSet.Unicode, SetLastError = true)]

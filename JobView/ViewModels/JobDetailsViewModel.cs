@@ -15,7 +15,7 @@ using static JobView.NativeMethods;
 namespace JobView.ViewModels {
 	class JobDetailsViewModel : BindableBase {
 		JobObjectViewModel _job;
-		SafeFileHandle _jobHadle;
+		IntPtr? _jobHadle;
 		IMainViewModel _mainViewModel;
 
 		public DelegateCommandBase GoToJobCommand { get; }
@@ -68,7 +68,7 @@ namespace JobView.ViewModels {
 						return null;
 
 					JobBasicProcessIdList list;
-					if (QueryInformationJobObject(_jobHadle.DangerousGetHandle(), JobInformationClass.BasicProcessList, out list, Marshal.SizeOf<JobBasicProcessIdList>())) {
+					if (QueryInformationJobObject(_jobHadle.Value, JobInformationClass.BasicProcessList, out list, Marshal.SizeOf<JobBasicProcessIdList>())) {
 						_processes = list.ProcessIds.Take(list.ProcessesInList).Select(id => new ProcessViewModel {
 							Id = id.ToInt32(),
 							Name = Process.GetProcessById(id.ToInt32())?.ProcessName

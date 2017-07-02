@@ -53,7 +53,7 @@
             </TabItem>
         </TabControl>
         <StatusBar Grid.Row="2" Grid.ColumnSpan="3">
-            <TextBlock Text="{Binding Jobs.Count, StringFormat=Job Objects: \{0\}}" />
+            <TextBlock Text="{Binding JobList.Count, StringFormat=Job Objects: \{0\}}" />
             <Separator />
             <TextBlock Text="{Binding ActiveProcessesInJob, StringFormat=Active Processes in Jobs: \{0\}}" />
         </StatusBar>

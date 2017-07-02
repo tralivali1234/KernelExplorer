@@ -25,12 +25,28 @@ bool InitKernelFunctions(HANDLE hDevice) {
 }
 
 bool EnumProcesses(HANDLE hDevice) {
-	PVOID processes[2048] = { 0 };
+	KernelObjectData processes[2048] = { 0 };
 	DWORD returned;
-	if(::DeviceIoControl(hDevice, KEXPLORE_IOCTL_ENUM_PROCESSES, nullptr, 0, processes, sizeof(processes), &returned, nullptr)) {
+	ACCESS_MASK access = PROCESS_ALL_ACCESS;
+	WCHAR path[MAX_PATH] = { 0 };
+	if(::DeviceIoControl(hDevice, KEXPLORE_IOCTL_ENUM_PROCESSES, &access, sizeof(access), processes, sizeof(processes), &returned, nullptr)) {
 		int count = returned / sizeof(processes[0]);
+
+		printf("Total processes: %d\n", count);
+		int total = 0;
 		for(int i = 0; i < count; i++) {
+			auto handle = processes[i].Handle;
+			if (::WaitForSingleObject(handle, 0) == WAIT_TIMEOUT) {
+				// show only live processes
+
+				DWORD size = MAX_PATH;
+				total++;
+				BOOL success = ::QueryFullProcessImageName(handle, 0, path, &size);
+				printf("Process %p (%d) %ws\n", processes[i].Address, ::GetProcessId(handle), success ? path : L"(Unknown)");
+			}
+			::CloseHandle(handle);
 		}
+		printf("Total %d live processes\n", total);
 	}
 
 	return false;

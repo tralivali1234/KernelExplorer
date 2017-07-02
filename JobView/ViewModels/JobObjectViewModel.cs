@@ -71,7 +71,7 @@ namespace JobView.ViewModels {
 		public unsafe JobObjectInformation JobInformation {
 			get {
 				JobBasicAccoutingInformation info1;
-				QueryInformationJobObject(Job.Handle.DangerousGetHandle(), JobInformationClass.BasicAccountingInformation, out info1, Marshal.SizeOf<JobBasicAccoutingInformation>());
+				QueryInformationJobObject(Job.Handle, JobInformationClass.BasicAccountingInformation, out info1, Marshal.SizeOf<JobBasicAccoutingInformation>());
 				return new JobObjectInformation {
 					TotalProcesses = info1.TotalProcesses,
 					ActiveProcesses = info1.ActiveProcesses,
