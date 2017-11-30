@@ -67,6 +67,8 @@ NTSTATUS KExploreDeviceControl(PDEVICE_OBJECT, PIRP Irp) {
 	auto stack = IoGetCurrentIrpStackLocation(Irp);
 	NTSTATUS status = STATUS_SUCCESS;
 	ULONG_PTR len = 0;
+	auto inputLen = stack->Parameters.DeviceIoControl.InputBufferLength;
+	auto outputLen = stack->Parameters.DeviceIoControl.OutputBufferLength;
 
 	switch (stack->Parameters.DeviceIoControl.IoControlCode) {
 	case KEXPLORE_IOCTL_GET_EXPORTED_NAME: {
@@ -80,7 +82,7 @@ NTSTATUS KExploreDeviceControl(PDEVICE_OBJECT, PIRP Irp) {
 	}
 
 	case KEXPLORE_IOCTL_ENUM_JOBS: {
-		auto size = stack->Parameters.DeviceIoControl.OutputBufferLength;
+		auto size = outputLen;
 		if (size == 0 || size % sizeof(KernelObjectData) != 0) {
 			status = STATUS_INVALID_BUFFER_SIZE;
 			break;
@@ -123,7 +125,7 @@ NTSTATUS KExploreDeviceControl(PDEVICE_OBJECT, PIRP Irp) {
 	}
 
 	case KEXPLORE_IOCTL_OPEN_OBJECT_HANDLE: {
-		if (stack->Parameters.DeviceIoControl.InputBufferLength < sizeof(OpenHandleData)) {
+		if (inputLen < sizeof(OpenHandleData)) {
 			status = STATUS_INVALID_BUFFER_SIZE;
 			break;
 		}
@@ -138,7 +140,7 @@ NTSTATUS KExploreDeviceControl(PDEVICE_OBJECT, PIRP Irp) {
 	}
 
 	case KEXPLORE_IOCTL_CLOSE_HANDLE: {
-		auto size = stack->Parameters.DeviceIoControl.InputBufferLength;
+		auto size = inputLen;
 		if (size == 0 || size % sizeof(HANDLE) != 0) {
 			status = STATUS_INVALID_BUFFER_SIZE;
 			break;
@@ -154,13 +156,13 @@ NTSTATUS KExploreDeviceControl(PDEVICE_OBJECT, PIRP Irp) {
 	}
 
 	case KEXPLORE_IOCTL_READ_MEMORY: {
-		if (stack->Parameters.DeviceIoControl.InputBufferLength < sizeof(PVOID)) {
+		if (inputLen < sizeof(PVOID)) {
 			status = STATUS_INVALID_BUFFER_SIZE;
 			break;
 		}
 
 		auto memory = *static_cast<void**>(Irp->AssociatedIrp.SystemBuffer);
-		auto size = stack->Parameters.DeviceIoControl.OutputBufferLength;
+		auto size = outputLen;
 		auto data = MmGetSystemAddressForMdlSafe(Irp->MdlAddress, NormalPagePriority);
 		if (data == nullptr) {
 			status = STATUS_INSUFFICIENT_RESOURCES;
@@ -175,12 +177,12 @@ NTSTATUS KExploreDeviceControl(PDEVICE_OBJECT, PIRP Irp) {
 	}
 
 	case KEXPLORE_IOCTL_WRITE_MEMORY: {
-		if (stack->Parameters.DeviceIoControl.InputBufferLength < sizeof(PVOID)) {
-			status = STATUS_INVALID_BUFFER_SIZE;
+		if (inputLen < sizeof(PVOID)) {
+			status = STATUS_BUFFER_TOO_SMALL;
 			break;
 		}
 		auto memory = *static_cast<void**>(Irp->AssociatedIrp.SystemBuffer);
-		len = stack->Parameters.DeviceIoControl.OutputBufferLength;
+		len = outputLen;
 		auto data = MmGetSystemAddressForMdlSafe(Irp->MdlAddress, NormalPagePriority);
 		if (data == nullptr) {
 			status = STATUS_INSUFFICIENT_RESOURCES;
@@ -190,6 +192,27 @@ NTSTATUS KExploreDeviceControl(PDEVICE_OBJECT, PIRP Irp) {
 
 		// perform the write
 		RtlCopyMemory(memory, data, len);
+		break;
+	}
+
+	case KEXPLORE_IOCTL_OPEN_PROCESS: {
+		if (inputLen < sizeof(OpenProcessData) || outputLen < sizeof(HANDLE)) {
+			status = STATUS_BUFFER_TOO_SMALL;
+			break;
+		}
+
+		auto data = static_cast<OpenProcessData*>(Irp->AssociatedIrp.SystemBuffer);
+		PEPROCESS process;
+		status = PsLookupProcessByProcessId(ULongToHandle(data->ProcessId), &process);
+		if (NT_SUCCESS(status)) {
+			HANDLE hProcess;
+			status = ObOpenObjectByPointer(process, 0, nullptr, data->AccessMask, *PsProcessType, KernelMode, &hProcess);
+			ObDereferenceObject(process);
+			if (NT_SUCCESS(status)) {
+				*(HANDLE*)Irp->AssociatedIrp.SystemBuffer = hProcess;
+				len = sizeof(HANDLE);
+			}
+		}
 		break;
 	}
 
@@ -204,7 +227,7 @@ NTSTATUS KExploreDeviceControl(PDEVICE_OBJECT, PIRP Irp) {
 		KAPC_STATE apcState;
 
 		// get target process
-		status = PsLookupProcessByProcessId(reinterpret_cast<HANDLE>(data->ProcessId), &targetProcess);
+		status = PsLookupProcessByProcessId(UlongToHandle(data->ProcessId), &targetProcess);
 		if (!NT_SUCCESS(status))
 			break;
 
