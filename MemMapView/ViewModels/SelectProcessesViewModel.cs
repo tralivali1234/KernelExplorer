@@ -10,6 +10,7 @@ using Zodiacon.WPF;
 using System.Collections.ObjectModel;
 using KernelExplorer.Driver;
 using System.Windows.Media;
+using Syncfusion.Data;
 
 namespace MemMapView.ViewModels {
     sealed class SelectProcessesViewModel : DialogViewModelBase {
@@ -56,6 +57,27 @@ namespace MemMapView.ViewModels {
         public ObservableCollection<object> SelectedProcesses {
             get => _selectedProcesses;
             set => SetProperty(ref _selectedProcesses, value);
+        }
+
+        public ICollectionViewAdv View { get; set; }
+
+        string _filterText;
+        public string FilterText {
+            get => _filterText;
+            set {
+                if (SetProperty(ref _filterText, value)) {
+                    if (string.IsNullOrWhiteSpace(value))
+                        View.Filter = null;
+                    else {
+                        value = value.ToLower();
+                        View.Filter = obj => {
+                            var process = (ProcessViewModel)obj;
+                            return process.Name.ToLower().Contains(value);
+                        };
+                    }
+                    View.RefreshFilter();
+                }
+            }
         }
     }
 }
