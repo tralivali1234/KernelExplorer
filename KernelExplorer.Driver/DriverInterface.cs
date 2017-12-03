@@ -90,8 +90,13 @@ namespace KernelExplorer.Driver {
 
 		public static async Task<ServiceControllerStatus?> LoadDriverAsync(string drivername) {
 			var controller = new ServiceController(drivername);
-			if (controller == null)
-				return null;
+            try {
+                if (controller == null || controller.ServiceHandle.IsInvalid)
+                    return null;
+            }
+            catch {
+                return null;
+            }
 
 			if (controller.Status == ServiceControllerStatus.Running)
 				return controller.Status;
