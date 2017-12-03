@@ -1,0 +1,56 @@
+﻿<UserControl x:Class="MemMapView.Views.MemoryHexView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:MemMapView.Views"
+             xmlns:hex="clr-namespace:HexEditControl;assembly=HexEditControl"
+             mc:Ignorable="d" 
+             d:DesignHeight="300" d:DesignWidth="300">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition />
+        </Grid.RowDefinitions>
+        <StackPanel Orientation="Horizontal" Margin="2">
+            <TextBlock>
+                <Span>Address: 0x</Span><Run Text="{Binding Address, StringFormat=X, Mode=OneTime}" FontWeight="Bold" />
+            </TextBlock>
+            <TextBlock Margin="10,0,0,0">
+                <Span>Size: 0x</Span><Run Text="{Binding Size, StringFormat=X, Mode=OneTime}" FontWeight="Bold" />
+            </TextBlock>
+        </StackPanel>
+        <ToolBar Grid.Row="1">
+            <ToolBar.Resources>
+                <DataTemplate x:Key="numberTemplate">
+                    <Border Padding="2" BorderBrush="{DynamicResource AccentColorBrush}" BorderThickness="2" CornerRadius="4" Width="25">
+                        <TextBlock Text="{Binding Content, RelativeSource={RelativeSource FindAncestor, AncestorType=RadioButton}}" 
+                                   VerticalAlignment="Center" FontSize="15" HorizontalAlignment="Center"/>
+                    </Border>
+                </DataTemplate>
+            </ToolBar.Resources>
+            <TextBlock Text="Word Size:" Margin="0,0,4,0" VerticalAlignment="Center"/>
+            <RadioButton IsChecked="{Binding Is1Byte}" GroupName="Word" Content="1" ContentTemplate="{StaticResource numberTemplate}"  />
+            <RadioButton IsChecked="{Binding Is2Byte}" GroupName="Word" Content="2" ContentTemplate="{StaticResource numberTemplate}"/>
+            <RadioButton IsChecked="{Binding Is4Byte}" GroupName="Word" Content="4" ContentTemplate="{StaticResource numberTemplate}"/>
+            <RadioButton IsChecked="{Binding Is8Byte}" GroupName="Word" Content="8" ContentTemplate="{StaticResource numberTemplate}"/>
+            <Separator />
+            <TextBlock Text="Bytes/Line:" Margin="0,0,4,0" VerticalAlignment="Center"/>
+            <RadioButton IsChecked="{Binding Is16Bytes}" GroupName="BytesPerLine" Content="16" ContentTemplate="{StaticResource numberTemplate}" />
+            <RadioButton IsChecked="{Binding Is24Bytes}" GroupName="BytesPerLine" Content="24" ContentTemplate="{StaticResource numberTemplate}" />
+            <RadioButton IsChecked="{Binding Is32Bytes}" GroupName="BytesPerLine" Content="32" ContentTemplate="{StaticResource numberTemplate}" />
+            <RadioButton IsChecked="{Binding Is48Bytes}" GroupName="BytesPerLine" Content="48" ContentTemplate="{StaticResource numberTemplate}" />
+            <RadioButton IsChecked="{Binding Is64Bytes}" GroupName="BytesPerLine" Content="64" ContentTemplate="{StaticResource numberTemplate}" />
+            <Separator />
+            <Button Command="{Binding ExportCommand}">
+                <StackPanel Orientation="Horizontal">
+                    <Image Source="/icons/save.ico" Width="20" Height="20" />
+                    <TextBlock Text="Export..." Margin="4,0,0,0" VerticalAlignment="Center" />
+                </StackPanel>
+            </Button>
+        </ToolBar>
+
+        <hex:HexEdit Grid.Row="2" HexEditor="{Binding Editor, Mode=OneWayToSource}" IsReadOnly="True" />
+    </Grid>
+</UserControl>

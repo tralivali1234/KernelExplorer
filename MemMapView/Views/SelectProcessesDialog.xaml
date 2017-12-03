@@ -1,0 +1,39 @@
+﻿<metro:MetroWindow x:Class="MemMapView.Views.SelectProcessesDialog"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:metro="http://metro.mahapps.com/winfx/xaml/controls"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:c="clr-namespace:MemMapView.Controls"
+        xmlns:sf="http://schemas.syncfusion.com/wpf"
+        xmlns:local="clr-namespace:MemMapView.Views"
+        mc:Ignorable="d" TitleCaps="False"
+        Title="Select Processes" SizeToContent="Width" Height="400" Width="500" ResizeMode="NoResize"
+                   BorderThickness="1" BorderBrush="{DynamicResource AccentColorBrush}">
+    <Grid Margin="8">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition />
+            <RowDefinition Height="10" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+        <sf:SfDataGrid Grid.Row="1" ItemsSource="{Binding Processes}" Style="{StaticResource SfDataGridStyle}" AllowResizingColumns="True"
+                       SelectedItems="{Binding SelectedProcesses, Mode=TwoWay}" SelectionMode="Extended">
+            <sf:SfDataGrid.Columns>
+                <sf:GridTemplateColumn HeaderText="Process Name" MappingName="Name" MinimumWidth="150" Width="250">
+                    <sf:GridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <StackPanel Orientation="Horizontal">
+                                <Image Width="20" Height="20" Source="{Binding Icon}" />
+                                <TextBlock Text="{Binding Name}" VerticalAlignment="Center" Margin="4,0,0,0" />
+                            </StackPanel>
+                        </DataTemplate>
+                    </sf:GridTemplateColumn.CellTemplate>
+                </sf:GridTemplateColumn>
+                <sf:GridTextColumn HeaderText="PID" MappingName="Id" TextAlignment="Center" Width="70" />
+                <sf:GridTextColumn HeaderText="Session" MappingName="Session" TextAlignment="Center" Width="70" />
+            </sf:SfDataGrid.Columns>
+        </sf:SfDataGrid>
+        <c:OKCancel Grid.Row="3" Margin="0,4" />
+    </Grid>
+</metro:MetroWindow>

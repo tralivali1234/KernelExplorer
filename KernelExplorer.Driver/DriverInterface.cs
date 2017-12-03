@@ -9,6 +9,7 @@ using System.Runtime.InteropServices;
 using System.ServiceProcess;
 using System.Text;
 using System.Threading.Tasks;
+using Zodiacon.ManagedWindows.Processes;
 using static KernelExplorer.Driver.NativeMethods;
 
 namespace KernelExplorer.Driver {
@@ -65,6 +66,19 @@ namespace KernelExplorer.Driver {
 
 			return null;
 		}
+
+        public unsafe SafeWaitHandle OpenProcessHandle(ProcessAccessMask accessMask, int pid) {
+            var data = new OpenProcessData {
+                ProcessId = pid,
+                AccessMask = accessMask
+            };
+
+            if (!DeviceIoControl(_hDevice, KExploreOpenProcessHandle, &data, Marshal.SizeOf<OpenProcessData>(), out IntPtr handle, IntPtr.Size, out var returned)) {
+                return null;
+            }
+
+            return new SafeWaitHandle(handle, true);
+        }
 
 		public unsafe bool ReadMemory(UIntPtr address, byte[] buffer, int size = 0) {
 			int returned;

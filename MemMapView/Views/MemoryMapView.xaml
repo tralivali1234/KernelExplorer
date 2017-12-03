@@ -1,0 +1,38 @@
+﻿<UserControl x:Class="MemMapView.Views.MemoryMapView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:sf="http://schemas.syncfusion.com/wpf"
+             xmlns:c="clr-namespace:MemMapView.Converters"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:MemMapView.Views"
+             mc:Ignorable="d" 
+             d:DesignHeight="300" d:DesignWidth="300">
+    <Grid>
+        <Grid.Resources>
+            <c:GridRowBackgroundConverter x:Key="rowBackgroundConverter" ReservedBrush="Yellow" CommittedBrush="LightGreen" FreeBrush="{DynamicResource WhiteBrush}" />
+        </Grid.Resources>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition />
+        </Grid.RowDefinitions>
+        <sf:SfDataGrid Grid.Row="1" ItemsSource="{Binding Regions}" Style="{StaticResource SfDataGridStyle}" AllowResizingColumns="True"
+                       AutoGenerateColumns="False" ColumnSizer="Auto" SelectedItem="{Binding SelectedItem, Mode=TwoWay}">
+            <sf:SfDataGrid.RowStyle>
+                <Style TargetType="{x:Type sf:VirtualizingCellsControl}">
+                    <Setter Property="Background" Value="{Binding State, Converter={StaticResource rowBackgroundConverter}}" />
+                </Style>
+            </sf:SfDataGrid.RowStyle>
+            
+            <sf:SfDataGrid.Columns>
+                <sf:GridTextColumn HeaderText="Address" MappingName="Address" TextElement.FontFamily="Consolas" DisplayBinding="{Binding Address, StringFormat=0x\{0:X\}}" TextAlignment="Right" />
+                <sf:GridTextColumn HeaderText="Size" MappingName="Size" DisplayBinding="{Binding Size, StringFormat=0x\{0:X\}}" TextAlignment="Right" />
+                <sf:GridTextColumn HeaderText="State" MappingName="State" TextAlignment="Center" />
+                <sf:GridTextColumn HeaderText="Protect" MappingName="Protect" TextAlignment="Left" />
+                <sf:GridTextColumn HeaderText="Allocation Protect" MappingName="AllocateProtect" TextAlignment="Left" />
+                <sf:GridTextColumn HeaderText="Type" MappingName="Type" TextAlignment="Center" />
+                <sf:GridTextColumn HeaderText="Details" MappingName="Details" TextAlignment="Left" />
+            </sf:SfDataGrid.Columns>
+        </sf:SfDataGrid>
+    </Grid>
+</UserControl>

@@ -7,6 +7,7 @@ using System.Security;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Zodiacon.ManagedWindows.Processes;
 
 namespace KernelExplorer.Driver {
 	[SuppressUnmanagedCodeSecurity]
@@ -16,13 +17,6 @@ namespace KernelExplorer.Driver {
 			ushort Length;
 			ushort MaximumLength;
 			public char* Buffer;
-		}
-
-		public enum JobAccessMask {
-			Query = 4
-		}
-
-		public enum ProcessAccessMask {
 		}
 
 		[StructLayout(LayoutKind.Sequential)]
@@ -49,8 +43,9 @@ namespace KernelExplorer.Driver {
 		public static readonly int KExploreOpenHandle = ControlCode(DeviceType, 0x905, MethodBufferred, FileReadAccess);
 		public static readonly int KExploreReadMemory = ControlCode(DeviceType, 0x901, MethodOutDirect, FileReadAccess);
 		public static readonly int KExploreInitFunctions = ControlCode(DeviceType, 0x9a, MethodBufferred, FileWriteAccess);
+        public static readonly int KExploreOpenProcessHandle = ControlCode(DeviceType, 0x90d, MethodBufferred, FileAnyAccess);
 
-		[StructLayout(LayoutKind.Sequential)]
+        [StructLayout(LayoutKind.Sequential)]
 		public struct OpenHandleData {
 			public UIntPtr Object;
 			public uint AccessMask;
@@ -68,7 +63,13 @@ namespace KernelExplorer.Driver {
 			out IntPtr handle, int outputSize,
 			out int returned, NativeOverlapped* overlapped = null);
 
-		[DllImport("kernel32", CharSet = CharSet.Unicode, SetLastError = true)]
+        [DllImport("kernel32", CharSet = CharSet.Unicode, SetLastError = true)]
+        public unsafe static extern bool DeviceIoControl(SafeFileHandle hDevice, int controlCode,
+            void* data, int inputSize,
+            out IntPtr handle, int outputSize,
+            out int returned, NativeOverlapped* overlapped = null);
+
+        [DllImport("kernel32", CharSet = CharSet.Unicode, SetLastError = true)]
 		public unsafe static extern bool DeviceIoControl(SafeFileHandle hDevice, int controlCode,
 			ref UIntPtr address, int inputSize,
 			byte[] buffer, int outputSize,
@@ -113,6 +114,12 @@ namespace KernelExplorer.Driver {
 			BasicAccountingInformation = 1,
 			BasicProcessList = 3
 		}
+
+        [StructLayout(LayoutKind.Sequential)]
+        public struct OpenProcessData {
+            public int ProcessId;
+            public ProcessAccessMask AccessMask;
+        }
 
 		[StructLayout(LayoutKind.Sequential)]
 		public struct JobBasicProcessIdList {
