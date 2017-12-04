@@ -41,6 +41,9 @@
         </ToolBar>
         <sf:TabControlExt Grid.Row="1" ItemsSource="{Binding TabItems}" TabVisualStyle="None" z:TabControlProperties.IsCached="True"
                           SelectedItem="{Binding SelectedTab, Mode=TwoWay}" CloseButtonType="Individual">
+            <i:Interaction.Behaviors>
+                <z:EventToCommand EventName="TabClosed" Command="{Binding TabClosedCommand}" />
+            </i:Interaction.Behaviors>
             <sf:TabControlExt.ItemTemplate>
                 <DataTemplate>
                     <StackPanel Orientation="Horizontal">

@@ -71,7 +71,7 @@ namespace MemMapView.ViewModels {
         }, () => SelectedItem != null && SelectedItem.State == PageState.Committed && IsReadable(SelectedItem.Protect)).ObservesProperty(() => SelectedItem);
 
         private bool IsReadable(PageProtection? protect) {
-            if (protect == null)
+            if (protect == null || protect.Value.HasFlag(PageProtection.Guard))
                 return false;
             protect = protect & (~PageProtection.Guard);
 

@@ -2,6 +2,7 @@
 using MemMapView.Views;
 using Prism.Commands;
 using Prism.Mvvm;
+using Syncfusion.Windows.Tools.Controls;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -93,5 +94,12 @@ namespace MemMapView.ViewModels {
             get => _selectedTab;
             set => SetProperty(ref _selectedTab, value);
         }
+
+        public ICommand TabClosedCommand => new DelegateCommand<CloseTabEventArgs>(args => {
+            var item = (TabItemViewModelBase)args.TargetTabItem.DataContext;
+            if (item is IDisposable disposable)
+                disposable.Dispose();
+            TabItems.Remove(item);
+        });
     }
 }
