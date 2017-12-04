@@ -16,8 +16,9 @@
             <RowDefinition Height="Auto" />
             <RowDefinition />
         </Grid.RowDefinitions>
-        <sf:SfDataGrid Grid.Row="1" ItemsSource="{Binding Regions}" Style="{StaticResource SfDataGridStyle}" AllowResizingColumns="True"
-                       AutoGenerateColumns="False" ColumnSizer="Auto" SelectedItem="{Binding SelectedItem, Mode=TwoWay}">
+        <sf:SfDataGrid Grid.Row="1" ItemsSource="{Binding Regions}" Style="{StaticResource SfDataGridStyle}" AllowResizingColumns="True" AllowGrouping="True"
+                       AutoGenerateColumns="False" ColumnSizer="Auto" SelectedItem="{Binding SelectedItem, Mode=TwoWay}" 
+                       ShowGroupDropArea="True" ShowColumnWhenGrouped="True" IsGroupDropAreaExpanded="True">
             <sf:SfDataGrid.RowStyle>
                 <Style TargetType="{x:Type sf:VirtualizingCellsControl}">
                     <Setter Property="Background" Value="{Binding State, Converter={StaticResource rowBackgroundConverter}}" />
