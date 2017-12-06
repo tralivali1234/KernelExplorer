@@ -4,18 +4,18 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              mc:Ignorable="d" Orientation="Horizontal" HorizontalAlignment="Center"
-             d:DesignHeight="40" d:DesignWidth="300" TextElement.FontSize="15">
-    <Button Command="{Binding OKCommand}" HorizontalContentAlignment="Center" Width="80" Margin="15,0,0,0">
+             d:DesignHeight="40" d:DesignWidth="300" >
+    <Button Command="{Binding OKCommand}" HorizontalContentAlignment="Center" Width="80" Margin="15,0,0,0" IsDefault="True">
         <StackPanel Orientation="Horizontal">
             <Image Source="/icons/ok.ico" Width="20" Height="20" />
-            <TextBlock Text="OK" Margin="6,0,0,0"  VerticalAlignment="Center" />
+            <TextBlock Text="OK" Margin="6,0,0,0"  VerticalAlignment="Center" FontSize="14" />
         </StackPanel>
     </Button>
 
-    <Button Command="{Binding CancelCommand}" Margin="15,0,0,0" HorizontalContentAlignment="Center" Width="80">
+    <Button Command="{Binding CancelCommand}" Margin="15,0,0,0" HorizontalContentAlignment="Center" Width="80" IsCancel="True">
         <StackPanel Orientation="Horizontal">
             <Image Source="/icons/cancel.ico" Width="20" Height="20" />
-            <TextBlock Text="Cancel" Margin="6,0,0,0" VerticalAlignment="Center" />
+            <TextBlock Text="Cancel" Margin="6,0,0,0" VerticalAlignment="Center" FontSize="14" />
         </StackPanel>
     </Button>
 </StackPanel>

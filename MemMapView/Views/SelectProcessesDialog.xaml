@@ -5,6 +5,8 @@
         xmlns:metro="http://metro.mahapps.com/winfx/xaml/controls"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:c="clr-namespace:MemMapView.Controls"
+        xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity"
+        xmlns:b="clr-namespace:MemMapView.Behaviors"
         xmlns:sf="http://schemas.syncfusion.com/wpf"
         xmlns:local="clr-namespace:MemMapView.Views"
         mc:Ignorable="d" TitleCaps="False"
@@ -19,9 +21,12 @@
         </Grid.RowDefinitions>
         <TextBox Text="{Binding FilterText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, Delay=200}" 
                  metro:TextBoxHelper.Watermark="Type to filter" metro:TextBoxHelper.ClearTextButton="True"
-                 Width="300" HorizontalAlignment="Left" Margin="2,0"/>
+                 Width="300" HorizontalAlignment="Left" Margin="0,2"/>
         <sf:SfDataGrid Grid.Row="1" ItemsSource="{Binding Processes}" Style="{StaticResource SfDataGridStyle}" AllowResizingColumns="True"
                        SelectedItems="{Binding SelectedProcesses, Mode=TwoWay}" SelectionMode="Extended" BindableView="{Binding View, Mode=OneWayToSource}">
+            <i:Interaction.Behaviors>
+                <b:SkinBehavior />
+            </i:Interaction.Behaviors>
             <sf:SfDataGrid.Columns>
                 <sf:GridTemplateColumn HeaderText="Process Name" MappingName="Name" MinimumWidth="150" Width="250">
                     <sf:GridTemplateColumn.CellTemplate>

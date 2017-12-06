@@ -5,7 +5,9 @@
              xmlns:sf="http://schemas.syncfusion.com/wpf"
              xmlns:c="clr-namespace:MemMapView.Converters"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity"
              xmlns:local="clr-namespace:MemMapView.Views"
+             xmlns:b="clr-namespace:MemMapView.Behaviors"
              mc:Ignorable="d" 
              d:DesignHeight="300" d:DesignWidth="300">
     <Grid>
@@ -17,8 +19,11 @@
             <RowDefinition />
         </Grid.RowDefinitions>
         <sf:SfDataGrid Grid.Row="1" ItemsSource="{Binding Regions}" Style="{StaticResource SfDataGridStyle}" AllowResizingColumns="True" AllowGrouping="True"
-                       AutoGenerateColumns="False" ColumnSizer="Auto" SelectedItem="{Binding SelectedItem, Mode=TwoWay}" 
+                       AutoGenerateColumns="False" ColumnSizer="Auto" SelectedItem="{Binding SelectedItem, Mode=TwoWay}" HeaderRowHeight="34" AllowTriStateSorting="False"
                        ShowGroupDropArea="True" ShowColumnWhenGrouped="True" IsGroupDropAreaExpanded="True">
+            <i:Interaction.Behaviors>
+                <b:SkinBehavior />
+            </i:Interaction.Behaviors>
             <sf:SfDataGrid.RowStyle>
                 <Style TargetType="{x:Type sf:VirtualizingCellsControl}">
                     <Setter Property="Background" Value="{Binding State, Converter={StaticResource rowBackgroundConverter}}" />
