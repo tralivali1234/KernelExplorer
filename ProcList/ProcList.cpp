@@ -21,7 +21,8 @@ bool InitKernelFunctions(HANDLE hDevice) {
 	functions.PsGetNextProcess = (PVOID)((ULONG_PTR)handler.GetSymbolFromName("PsGetNextProcess")->GetSymbolInfo()->Address - address + (ULONG_PTR)kernelAddress);
 
 	DWORD returned;
-	return ::DeviceIoControl(hDevice, KEXPLORE_IOCTL_INIT_KERNEL_FUNCTIONS, &functions, sizeof(functions), nullptr, 0, &returned, nullptr) ? true : false; 
+	return ::DeviceIoControl(hDevice, static_cast<DWORD>(KExploreIoctls::InitKernelFunctions), 
+		&functions, sizeof(functions), nullptr, 0, &returned, nullptr) ? true : false; 
 }
 
 bool EnumProcesses(HANDLE hDevice) {
@@ -29,7 +30,7 @@ bool EnumProcesses(HANDLE hDevice) {
 	DWORD returned;
 	ACCESS_MASK access = PROCESS_ALL_ACCESS;
 	WCHAR path[MAX_PATH] = { 0 };
-	if(::DeviceIoControl(hDevice, KEXPLORE_IOCTL_ENUM_PROCESSES, &access, sizeof(access), processes, sizeof(processes), &returned, nullptr)) {
+	if(::DeviceIoControl(hDevice, static_cast<DWORD>(KExploreIoctls::EnumProcesses), &access, sizeof(access), processes, sizeof(processes), &returned, nullptr)) {
 		int count = returned / sizeof(processes[0]);
 
 		printf("Total processes: %d\n", count);

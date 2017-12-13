@@ -149,13 +149,13 @@ int main(int argc, char* argv[]) {
 	KernelFunctions functions = { 0 };
 	functions.PspGetNextJob = (void*)((ULONG_PTR)KExploreHelper::GetKernelBaseAddress() + PspGetNextJobSymbol->GetSymbolInfo()->Address - address);
 
-	if (!::DeviceIoControl(hDevice, KEXPLORE_IOCTL_INIT_KERNEL_FUNCTIONS, &functions, sizeof(functions), nullptr, 0, &returned, nullptr))
+	if (!::DeviceIoControl(hDevice, static_cast<DWORD>(KExploreIoctls::InitKernelFunctions), &functions, sizeof(functions), nullptr, 0, &returned, nullptr))
 		return Error("Failed to init kernel functions");
 
 	KernelObjectData jobs[1024];
 	ACCESS_MASK access = JOB_OBJECT_QUERY;
 
-	if (::DeviceIoControl(hDevice, KEXPLORE_IOCTL_ENUM_JOBS, &access, sizeof(access), jobs, sizeof(jobs), &returned, nullptr)) {
+	if (::DeviceIoControl(hDevice, static_cast<DWORD>(KExploreIoctls::EnumJobs), &access, sizeof(access), jobs, sizeof(jobs), &returned, nullptr)) {
 		int countJobs = returned / sizeof(jobs[0]);
 		printf("Found %d jobs.\n", countJobs);
 

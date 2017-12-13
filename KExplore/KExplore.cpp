@@ -70,8 +70,8 @@ NTSTATUS KExploreDeviceControl(PDEVICE_OBJECT, PIRP Irp) {
 	auto inputLen = stack->Parameters.DeviceIoControl.InputBufferLength;
 	auto outputLen = stack->Parameters.DeviceIoControl.OutputBufferLength;
 
-	switch (stack->Parameters.DeviceIoControl.IoControlCode) {
-	case KEXPLORE_IOCTL_GET_EXPORTED_NAME: {
+	switch (static_cast<KExploreIoctls>(stack->Parameters.DeviceIoControl.IoControlCode)) {
+	case KExploreIoctls::GetExportedName: {
 		UNICODE_STRING name;
 		PCWSTR exportName = static_cast<PCWSTR>(Irp->AssociatedIrp.SystemBuffer);
 		RtlInitUnicodeString(&name, exportName);
@@ -81,7 +81,7 @@ NTSTATUS KExploreDeviceControl(PDEVICE_OBJECT, PIRP Irp) {
 		break;
 	}
 
-	case KEXPLORE_IOCTL_ENUM_JOBS: {
+	case KExploreIoctls::EnumJobs: {
 		auto size = outputLen;
 		if (size == 0 || size % sizeof(KernelObjectData) != 0) {
 			status = STATUS_INVALID_BUFFER_SIZE;
@@ -124,7 +124,7 @@ NTSTATUS KExploreDeviceControl(PDEVICE_OBJECT, PIRP Irp) {
 		break;
 	}
 
-	case KEXPLORE_IOCTL_OPEN_OBJECT_HANDLE: {
+	case KExploreIoctls::OpenObject: {
 		if (inputLen < sizeof(OpenHandleData)) {
 			status = STATUS_INVALID_BUFFER_SIZE;
 			break;
@@ -139,7 +139,7 @@ NTSTATUS KExploreDeviceControl(PDEVICE_OBJECT, PIRP Irp) {
 		break;
 	}
 
-	case KEXPLORE_IOCTL_CLOSE_HANDLE: {
+	case KExploreIoctls::CloseHandle: {
 		auto size = inputLen;
 		if (size == 0 || size % sizeof(HANDLE) != 0) {
 			status = STATUS_INVALID_BUFFER_SIZE;
@@ -155,7 +155,7 @@ NTSTATUS KExploreDeviceControl(PDEVICE_OBJECT, PIRP Irp) {
 		break;
 	}
 
-	case KEXPLORE_IOCTL_READ_MEMORY: {
+	case KExploreIoctls::ReadMemory: {
 		if (inputLen < sizeof(PVOID)) {
 			status = STATUS_INVALID_BUFFER_SIZE;
 			break;
@@ -176,7 +176,7 @@ NTSTATUS KExploreDeviceControl(PDEVICE_OBJECT, PIRP Irp) {
 		break;
 	}
 
-	case KEXPLORE_IOCTL_WRITE_MEMORY: {
+	case KExploreIoctls::WriteMemory: {
 		if (inputLen < sizeof(PVOID)) {
 			status = STATUS_BUFFER_TOO_SMALL;
 			break;
@@ -195,7 +195,7 @@ NTSTATUS KExploreDeviceControl(PDEVICE_OBJECT, PIRP Irp) {
 		break;
 	}
 
-	case KEXPLORE_IOCTL_OPEN_PROCESS: {
+	case KExploreIoctls::OpenProcess: {
 		if (inputLen < sizeof(OpenProcessData) || outputLen < sizeof(HANDLE)) {
 			status = STATUS_BUFFER_TOO_SMALL;
 			break;
@@ -216,13 +216,13 @@ NTSTATUS KExploreDeviceControl(PDEVICE_OBJECT, PIRP Irp) {
 		break;
 	}
 
-	case KEXPLORE_IOCTL_READ_PROCESS_MEMORY: {
-		if (stack->Parameters.DeviceIoControl.InputBufferLength < sizeof(ReadWriteProcessMemory)) {
+	case KExploreIoctls::ReadProcessMemory: {
+		if (stack->Parameters.DeviceIoControl.InputBufferLength < sizeof(ReadWriteProcessMemoryData)) {
 			status = STATUS_INVALID_BUFFER_SIZE;
 			break;
 		}
 
-		auto data = static_cast<ReadWriteProcessMemory*>(Irp->AssociatedIrp.SystemBuffer);
+		auto data = static_cast<ReadWriteProcessMemoryData*>(Irp->AssociatedIrp.SystemBuffer);
 		PEPROCESS targetProcess;
 		KAPC_STATE apcState;
 
@@ -258,13 +258,13 @@ NTSTATUS KExploreDeviceControl(PDEVICE_OBJECT, PIRP Irp) {
 		break;
 	}
 
-	case KEXPLORE_IOCTL_WRITE_PROCESS_MEMORY: {
-		if (stack->Parameters.DeviceIoControl.InputBufferLength < sizeof(ReadWriteProcessMemory)) {
+	case KExploreIoctls::WriteProcessMemory: {
+		if (stack->Parameters.DeviceIoControl.InputBufferLength < sizeof(ReadWriteProcessMemoryData)) {
 			status = STATUS_INVALID_BUFFER_SIZE;
 			break;
 		}
 
-		auto data = static_cast<ReadWriteProcessMemory*>(Irp->AssociatedIrp.SystemBuffer);
+		auto data = static_cast<ReadWriteProcessMemoryData*>(Irp->AssociatedIrp.SystemBuffer);
 		PEPROCESS targetProcess;
 		KAPC_STATE apcState;
 
@@ -299,7 +299,7 @@ NTSTATUS KExploreDeviceControl(PDEVICE_OBJECT, PIRP Irp) {
 		break;
 	}
 
-	case KEXPLORE_IOCTL_INIT_KERNEL_FUNCTIONS: {
+	case KExploreIoctls::InitKernelFunctions: {
 		auto size = stack->Parameters.DeviceIoControl.InputBufferLength;
 		if (size == 0 || size % sizeof(PVOID) != 0) {
 			status = STATUS_INVALID_BUFFER_SIZE;
@@ -311,7 +311,7 @@ NTSTATUS KExploreDeviceControl(PDEVICE_OBJECT, PIRP Irp) {
 		break;
 	}
 
-	case KEXPLORE_IOCTL_ENUM_PROCESSES: {
+	case KExploreIoctls::EnumProcesses: {
 		auto PsGetNextProcess = g_KernelFunctions.PsGetNextProcess;
 		if (PsGetNextProcess == nullptr) {
 			status = STATUS_NOT_FOUND;
@@ -351,7 +351,7 @@ NTSTATUS KExploreDeviceControl(PDEVICE_OBJECT, PIRP Irp) {
 		break;
 	}
 
-	case KEXPLORE_IOCTL_DEREFERENCE_OBJECTS: {
+	case KExploreIoctls::DereferenceObjects: {
 		auto size = stack->Parameters.DeviceIoControl.InputBufferLength;
 		if (size == 0 || size % sizeof(PVOID) != 0) {
 			status = STATUS_INVALID_BUFFER_SIZE;
