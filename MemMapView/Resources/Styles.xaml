@@ -6,11 +6,12 @@
                     >
     <Style TargetType="{x:Type sf:SfDataGrid}" x:Key="SfDataGridStyle" >
         <Setter Property="RowSelectionBrush" Value="{DynamicResource AccentColorBrush}" />
-        <Setter Property="RowHoverHighlightingBrush" Value="{DynamicResource AccentColorBrush2}" />
+        <Setter Property="RowHoverHighlightingBrush" Value="{DynamicResource AccentColorBrush3}" />
         <Setter Property="AllowRowHoverHighlighting" Value="True" />
         <Setter Property="SelectionForegroundBrush" Value="{DynamicResource WhiteBrush}" />
         <Setter Property="SelectionUnit" Value="Row" />
         <Setter Property="NavigationMode" Value="Row" />
+        <Setter Property="sf:SkinStorage.VisualStyle" Value="Metro" />
     </Style>
     <DataTemplate DataType="{x:Type vm:MemoryMapViewModel}">
         <view:MemoryMapView />

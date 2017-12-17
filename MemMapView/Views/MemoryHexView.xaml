@@ -26,8 +26,13 @@
                 <DataTemplate x:Key="numberTemplate">
                     <Border Padding="2" BorderBrush="{DynamicResource AccentColorBrush}" BorderThickness="2" CornerRadius="4" Width="25">
                         <TextBlock Text="{Binding Content, RelativeSource={RelativeSource FindAncestor, AncestorType=RadioButton}}" 
-                                   VerticalAlignment="Center" FontSize="15" HorizontalAlignment="Center"/>
+                                   VerticalAlignment="Center" FontSize="15" HorizontalAlignment="Center" x:Name="_tb"/>
                     </Border>
+                    <DataTemplate.Triggers>
+                        <DataTrigger Binding="{Binding IsChecked, RelativeSource={RelativeSource FindAncestor, AncestorType=RadioButton}}" Value="True">
+                            <Setter Property="Foreground" Value="{DynamicResource WhiteBrush}" TargetName="_tb" />
+                        </DataTrigger>
+                    </DataTemplate.Triggers>
                 </DataTemplate>
             </ToolBar.Resources>
             <TextBlock Text="Word Size:" Margin="0,0,4,0" VerticalAlignment="Center"/>

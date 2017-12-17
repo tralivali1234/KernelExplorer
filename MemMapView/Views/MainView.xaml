@@ -39,8 +39,9 @@
                 </StackPanel>
             </Button>
         </ToolBar>
-        <sf:TabControlExt Grid.Row="1" ItemsSource="{Binding TabItems}" TabVisualStyle="None" z:TabControlProperties.IsCached="True"
-                          SelectedItem="{Binding SelectedTab, Mode=TwoWay}" CloseButtonType="Individual" TabItemLayout="MultiLine">
+        <sf:TabControlExt Grid.Row="1" ItemsSource="{Binding TabItems}" 
+                          SelectedItem="{Binding SelectedTab, Mode=TwoWay}" CloseButtonType="Individual" TabItemLayout="MultiLine" 
+                          sf:SkinStorage.VisualStyle="Metro" IsDisableUnloadTabItemExtContent="True">
             <i:Interaction.Behaviors>
                 <z:EventToCommand EventName="TabClosed" Command="{Binding TabClosedCommand}" />
             </i:Interaction.Behaviors>
