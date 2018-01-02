@@ -80,7 +80,20 @@ namespace KernelExplorer.Driver {
             return new SafeWaitHandle(handle, true);
         }
 
-		public unsafe bool ReadMemory(UIntPtr address, byte[] buffer, int size = 0) {
+        public unsafe SafeWaitHandle OpenThreadHandle(ThreadAccessMask accessMask, int tid) {
+            var data = new OpenThreadData {
+                ThreadId = tid,
+                AccessMask = accessMask
+            };
+
+            if (!DeviceIoControl(_hDevice, KExploreOpenThreadHandle, &data, Marshal.SizeOf<OpenThreadData>(), out IntPtr handle, IntPtr.Size, out var returned)) {
+                return null;
+            }
+
+            return new SafeWaitHandle(handle, true);
+        }
+
+        public unsafe bool ReadMemory(UIntPtr address, byte[] buffer, int size = 0) {
 			int returned;
 			return DeviceIoControl(_hDevice, KExploreReadMemory,
 				ref address, IntPtr.Size,

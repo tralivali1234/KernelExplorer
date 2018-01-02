@@ -11,6 +11,7 @@ using System.Collections.ObjectModel;
 using KernelExplorer.Driver;
 using System.Windows.Media;
 using Syncfusion.Data;
+using Zodiacon.ManagedWindows.Core;
 
 namespace MemMapView.ViewModels {
     sealed class SelectProcessesViewModel : DialogViewModelBase {
@@ -27,7 +28,7 @@ namespace MemMapView.ViewModels {
                 if (_processes != null)
                     return _processes;
                 _processes = new ObservableCollection<ProcessViewModel>();
-                var processes = NativeProcess.EnumProcesses();
+                var processes = SystemInformation.EnumProcesses();
                 foreach (var process in processes.Where(p => p.Id != 0)) {
                     using (var hProcess = _driver.OpenProcessHandle(ProcessAccessMask.QueryInformation, process.Id)) {
                         if (hProcess == null || hProcess.IsInvalid)

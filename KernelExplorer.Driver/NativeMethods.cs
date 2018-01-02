@@ -44,6 +44,7 @@ namespace KernelExplorer.Driver {
 		public static readonly int KExploreReadMemory = ControlCode(DeviceType, 0x901, MethodOutDirect, FileReadAccess);
 		public static readonly int KExploreInitFunctions = ControlCode(DeviceType, 0x9a, MethodBufferred, FileWriteAccess);
         public static readonly int KExploreOpenProcessHandle = ControlCode(DeviceType, 0x90d, MethodBufferred, FileAnyAccess);
+        public static readonly int KExploreOpenThreadHandle = ControlCode(DeviceType, 0x90e, MethodBufferred, FileAnyAccess);
 
         [StructLayout(LayoutKind.Sequential)]
 		public struct OpenHandleData {
@@ -121,7 +122,13 @@ namespace KernelExplorer.Driver {
             public ProcessAccessMask AccessMask;
         }
 
-		[StructLayout(LayoutKind.Sequential)]
+        [StructLayout(LayoutKind.Sequential)]
+        public struct OpenThreadData {
+            public int ThreadId;
+            public ThreadAccessMask AccessMask;
+        }
+
+        [StructLayout(LayoutKind.Sequential)]
 		public struct JobBasicProcessIdList {
 			public int AssignedProcesses;
 			public int ProcessesInList;

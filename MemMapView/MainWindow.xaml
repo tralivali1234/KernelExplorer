@@ -8,7 +8,7 @@
         mc:Ignorable="d"
         xmlns:view="clr-namespace:MemMapView.Views" BorderThickness="1"
     	BorderBrush="{DynamicResource AccentColorBrush}" TitleCaps="False" Icon="/icons/memory.ico"
-        Title="Memory Map Viewer v0.1 (C)2017 Pavel Yosifovich" MinHeight="300" MinWidth="500">
+        Title="Memory Map Viewer v0.2 (C)2017-2018 Pavel Yosifovich" MinHeight="300" MinWidth="500">
     <view:MainView>
         
     </view:MainView>

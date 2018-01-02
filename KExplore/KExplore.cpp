@@ -216,6 +216,27 @@ NTSTATUS KExploreDeviceControl(PDEVICE_OBJECT, PIRP Irp) {
 		break;
 	}
 
+	case KExploreIoctls::OpenThread: {
+		if (inputLen < sizeof(OpenThreadData) || outputLen < sizeof(HANDLE)) {
+			status = STATUS_BUFFER_TOO_SMALL;
+			break;
+		}
+
+		auto data = static_cast<OpenThreadData*>(Irp->AssociatedIrp.SystemBuffer);
+		PETHREAD thread;
+		status = PsLookupThreadByThreadId(ULongToHandle(data->ThreadId), &thread);
+		if (NT_SUCCESS(status)) {
+			HANDLE hThread;
+			status = ObOpenObjectByPointer(thread, 0, nullptr, data->AccessMask, *PsThreadType, KernelMode, &hThread);
+			ObDereferenceObject(thread);
+			if (NT_SUCCESS(status)) {
+				*(HANDLE*)Irp->AssociatedIrp.SystemBuffer = hThread;
+				len = sizeof(HANDLE);
+			}
+		}
+		break;
+	}
+
 	case KExploreIoctls::ReadProcessMemory: {
 		if (stack->Parameters.DeviceIoControl.InputBufferLength < sizeof(ReadWriteProcessMemoryData)) {
 			status = STATUS_INVALID_BUFFER_SIZE;

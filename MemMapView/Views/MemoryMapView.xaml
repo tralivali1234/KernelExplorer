@@ -20,7 +20,7 @@
         </Grid.RowDefinitions>
         <sf:SfDataGrid Grid.Row="1" ItemsSource="{Binding Regions}" Style="{StaticResource SfDataGridStyle}" AllowResizingColumns="True" AllowGrouping="True"
                        AutoGenerateColumns="False" ColumnSizer="Auto" SelectedItem="{Binding SelectedItem, Mode=TwoWay}" HeaderRowHeight="34" AllowTriStateSorting="False"
-                       ShowGroupDropArea="True" ShowColumnWhenGrouped="True" IsGroupDropAreaExpanded="True">
+                       ShowGroupDropArea="True" ShowColumnWhenGrouped="True" IsGroupDropAreaExpanded="False">
             <i:Interaction.Behaviors>
                 <b:SkinBehavior />
             </i:Interaction.Behaviors>

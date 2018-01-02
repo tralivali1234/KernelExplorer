@@ -16,6 +16,7 @@ enum class KExploreIoctls : ULONG {
     DereferenceObjects		= CTL_CODE(FILE_DEVICE_UNKNOWN, 0x90b, METHOD_BUFFERED, FILE_ANY_ACCESS),
     CloseHandle				= CTL_CODE(FILE_DEVICE_UNKNOWN, 0x90c, METHOD_BUFFERED, FILE_ANY_ACCESS),
 	OpenProcess				= CTL_CODE(FILE_DEVICE_UNKNOWN, 0x90d, METHOD_BUFFERED, FILE_ANY_ACCESS),
+	OpenThread				= CTL_CODE(FILE_DEVICE_UNKNOWN, 0x90e, METHOD_BUFFERED, FILE_ANY_ACCESS),
 };
 
 struct KernelObjectData {
@@ -25,6 +26,11 @@ struct KernelObjectData {
 
 struct OpenProcessData {
 	ULONG ProcessId;
+	ACCESS_MASK AccessMask;
+};
+
+struct OpenThreadData {
+	ULONG ThreadId;
 	ACCESS_MASK AccessMask;
 };
 
