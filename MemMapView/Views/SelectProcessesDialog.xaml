@@ -10,7 +10,7 @@
         xmlns:sf="http://schemas.syncfusion.com/wpf"
         xmlns:z="http://zodiacon.wpf/2016"
         mc:Ignorable="d" TitleCaps="False"
-        Title="Select Processes" SizeToContent="Width" Height="400" Width="500" ResizeMode="NoResize"
+        Title="Select Processes" SizeToContent="Width" Height="480" Width="540" ResizeMode="NoResize" WindowStartupLocation="CenterOwner"
                    BorderThickness="1" BorderBrush="{DynamicResource AccentColorBrush}">
     <Grid Margin="8">
         <Grid.RowDefinitions>
@@ -23,7 +23,8 @@
                  metro:TextBoxHelper.Watermark="Type to filter" metro:TextBoxHelper.ClearTextButton="True"
                  Width="300" HorizontalAlignment="Left" Margin="0,2" z:FocusProperties.FocusOnLoad="True"/>
         <sf:SfDataGrid Grid.Row="1" ItemsSource="{Binding Processes}" Style="{StaticResource SfDataGridStyle}" AllowResizingColumns="True"
-                       SelectedItems="{Binding SelectedProcesses, Mode=TwoWay}" SelectionMode="Extended" BindableView="{Binding View, Mode=OneWayToSource}">
+                       SelectedItems="{Binding SelectedProcesses, Mode=TwoWay}" SelectionMode="Extended" BindableView="{Binding View, Mode=OneWayToSource}"
+                       SelectedItem="{Binding SelectedItem, Mode=OneWayToSource}">
             <i:Interaction.Behaviors>
                 <b:SkinBehavior />
             </i:Interaction.Behaviors>

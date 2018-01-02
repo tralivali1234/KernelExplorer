@@ -20,6 +20,8 @@ namespace MemMapView.ViewModels {
 
         public SelectProcessesViewModel(Window dialog, DriverInterface driver) : base(dialog) {
             _driver = driver;
+            CanExecuteOKCommand = () => SelectedProcesses.Count > 0;
+            OKCommand = OKCommand.ObservesProperty(() => SelectedItem);
         }
 
         ObservableCollection<ProcessViewModel> _processes;
@@ -60,6 +62,8 @@ namespace MemMapView.ViewModels {
             set => SetProperty(ref _selectedProcesses, value);
         }
 
+        ProcessViewModel _selectedItem;
+
         public ICollectionViewAdv View { get; set; }
 
         string _filterText;
@@ -79,6 +83,11 @@ namespace MemMapView.ViewModels {
                     View.RefreshFilter();
                 }
             }
+        }
+
+        public ProcessViewModel SelectedItem {
+            get => _selectedItem;
+            set => SetProperty(ref _selectedItem, value);
         }
     }
 }

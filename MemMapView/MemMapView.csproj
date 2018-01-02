@@ -88,6 +88,9 @@
     <Reference Include="WindowsBase" />
     <Reference Include="PresentationCore" />
     <Reference Include="PresentationFramework" />
+    <Reference Include="Zodiacon.DebugHelp, Version=1.0.6569.18201, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Zodiacon.DebugHelp.0.4.4\lib\net40\Zodiacon.DebugHelp.dll</HintPath>
+    </Reference>
     <Reference Include="Zodiacon.ManagedWindows.Core, Version=1.0.6575.31133, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\Zodiacon.ManagedWindows.Processes.0.1.20\lib\net45\Zodiacon.ManagedWindows.Core.dll</HintPath>
     </Reference>
