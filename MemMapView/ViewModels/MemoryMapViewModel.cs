@@ -70,17 +70,14 @@ namespace MemMapView.ViewModels {
 
         StringBuilder _details = new StringBuilder(512);
         private string BuildDetails(MemoryRegion region) {
-            if (region.State != PageState.Committed)
-                return string.Empty;
-
-            if (region.Type == PageType.Image) {
+            if (region.Type == PageType.Image && region.State == PageState.Committed) {
                 if (NativeMethods.GetMappedFileName(_hProcess, new IntPtr(region.StartAddress), _details, _details.Capacity) > 0)
                     return Helpers.NativePathToDosPath(_details.ToString());
             }
-            else if (region.Type == PageType.Private) {
+            else if (region.Type == PageType.Private && region.State != PageState.Free) {
                 // check if falls on a thread's stack
                 foreach (var th in _threads) {
-                    if (region.StartAddress <= th.Limit && region.StartAddress + region.Size >= th.Base) {
+                    if (region.StartAddress <= th.Limit && region.StartAddress + region.Size <= th.Base) {
                         return $"Thread {th.ThreadId} (0x{th.ThreadId:X}) Stack";
                     }
                 }

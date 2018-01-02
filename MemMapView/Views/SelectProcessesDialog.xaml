@@ -8,7 +8,7 @@
         xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity"
         xmlns:b="clr-namespace:MemMapView.Behaviors"
         xmlns:sf="http://schemas.syncfusion.com/wpf"
-        xmlns:local="clr-namespace:MemMapView.Views"
+        xmlns:z="http://zodiacon.wpf/2016"
         mc:Ignorable="d" TitleCaps="False"
         Title="Select Processes" SizeToContent="Width" Height="400" Width="500" ResizeMode="NoResize"
                    BorderThickness="1" BorderBrush="{DynamicResource AccentColorBrush}">
@@ -21,7 +21,7 @@
         </Grid.RowDefinitions>
         <TextBox Text="{Binding FilterText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, Delay=200}" 
                  metro:TextBoxHelper.Watermark="Type to filter" metro:TextBoxHelper.ClearTextButton="True"
-                 Width="300" HorizontalAlignment="Left" Margin="0,2"/>
+                 Width="300" HorizontalAlignment="Left" Margin="0,2" z:FocusProperties.FocusOnLoad="True"/>
         <sf:SfDataGrid Grid.Row="1" ItemsSource="{Binding Processes}" Style="{StaticResource SfDataGridStyle}" AllowResizingColumns="True"
                        SelectedItems="{Binding SelectedProcesses, Mode=TwoWay}" SelectionMode="Extended" BindableView="{Binding View, Mode=OneWayToSource}">
             <i:Interaction.Behaviors>
