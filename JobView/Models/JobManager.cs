@@ -14,7 +14,7 @@ namespace JobView.Models {
 	class JobManager : IDisposable {
 		List<JobObject> _rootJobs = new List<JobObject>(64);
 		Dictionary<UIntPtr, JobObject> _jobs = new Dictionary<UIntPtr, JobObject>(128);
-		static StructDescription _ejobDescription;
+		static StructDescriptor _ejobDescription;
 		DriverInterface _driver;
 		public JobManager(DriverInterface driver) {
 			_driver = driver;
@@ -29,7 +29,7 @@ namespace JobView.Models {
 					var types = handler.EnumTypes(address, "_ejob");
 					Debug.Assert(types != null && types.Count == 1);
 
-					_ejobDescription = handler.BuildStructDescription(address, types[0].TypeIndex);
+					_ejobDescription = handler.BuildStructDescriptor(address, types[0].TypeIndex);
 				}
 			}
 		}

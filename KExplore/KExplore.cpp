@@ -2,9 +2,8 @@
 #include "KExploreClient.h"
 #include "KExplore.h"
 
-#define DRIVER_PREFIX "KExplore: "
-
 KernelFunctions g_KernelFunctions;
+
 
 // prototypes
 
@@ -71,324 +70,362 @@ NTSTATUS KExploreDeviceControl(PDEVICE_OBJECT, PIRP Irp) {
 	auto outputLen = stack->Parameters.DeviceIoControl.OutputBufferLength;
 
 	switch (static_cast<KExploreIoctls>(stack->Parameters.DeviceIoControl.IoControlCode)) {
-	case KExploreIoctls::GetExportedName: {
-		UNICODE_STRING name;
-		PCWSTR exportName = static_cast<PCWSTR>(Irp->AssociatedIrp.SystemBuffer);
-		RtlInitUnicodeString(&name, exportName);
-		void* address = MmGetSystemRoutineAddress(&name);
-		*(void**)exportName = address;
-		len = sizeof(void*);
-		break;
-	}
-
-	case KExploreIoctls::EnumJobs: {
-		auto size = outputLen;
-		if (size == 0 || size % sizeof(KernelObjectData) != 0) {
-			status = STATUS_INVALID_BUFFER_SIZE;
+		case KExploreIoctls::GetExportedName:
+		{
+			UNICODE_STRING name;
+			PCWSTR exportName = static_cast<PCWSTR>(Irp->AssociatedIrp.SystemBuffer);
+			RtlInitUnicodeString(&name, exportName);
+			void* address = MmGetSystemRoutineAddress(&name);
+			*(void**)exportName = address;
+			len = sizeof(void*);
 			break;
 		}
 
-		if (stack->Parameters.DeviceIoControl.InputBufferLength < sizeof(ACCESS_MASK)) {
-			status = STATUS_BUFFER_TOO_SMALL;
-			break;
-		}
+		case KExploreIoctls::EnumJobs:
+		{
+			auto size = outputLen;
+			if (size == 0 || size % sizeof(KernelObjectData) != 0) {
+				status = STATUS_INVALID_BUFFER_SIZE;
+				break;
+			}
 
-		auto buffer = Irp->AssociatedIrp.SystemBuffer;
-		auto accessMask = *static_cast<ACCESS_MASK*>(buffer);
+			if (stack->Parameters.DeviceIoControl.InputBufferLength < sizeof(ACCESS_MASK)) {
+				status = STATUS_BUFFER_TOO_SMALL;
+				break;
+			}
 
-		auto PspGetNextJob = g_KernelFunctions.PspGetNextJob;
-		if (PspGetNextJob == nullptr) {
-			status = STATUS_NOT_FOUND;
-			KdPrint((DRIVER_PREFIX "Missing PspGetNextJob function\n"));
-			break;
-		}
+			auto buffer = Irp->AssociatedIrp.SystemBuffer;
+			auto accessMask = *static_cast<ACCESS_MASK*>(buffer);
 
-		auto output = static_cast<KernelObjectData*>(buffer);
+			auto PspGetNextJob = g_KernelFunctions.PspGetNextJob;
+			if (PspGetNextJob == nullptr) {
+				status = STATUS_NOT_FOUND;
+				KdPrint((DRIVER_PREFIX "Missing PspGetNextJob function\n"));
+				break;
+			}
 
-		int count = 0, total = 0;
-		KernelObjectData data;
-		for (auto job = PspGetNextJob(nullptr); job; job = PspGetNextJob(job)) {
-			total++;
-			if (size >= sizeof(data)) {
-				data.Address = job;
-				if (NT_SUCCESS(ObOpenObjectByPointer(job, 0, nullptr, accessMask, nullptr, KernelMode, &data.Handle))) {
-					output[count++] = data;
-					size -= sizeof(data);
+			auto output = static_cast<KernelObjectData*>(buffer);
+
+			int count = 0, total = 0;
+			KernelObjectData data;
+			for (auto job = PspGetNextJob(nullptr); job; job = PspGetNextJob(job)) {
+				total++;
+				if (size >= sizeof(data)) {
+					data.Address = job;
+					if (NT_SUCCESS(ObOpenObjectByPointer(job, 0, nullptr, accessMask, nullptr, KernelMode, &data.Handle))) {
+						output[count++] = data;
+						size -= sizeof(data);
+					}
 				}
 			}
-		}
 
-		len = count * sizeof(KernelObjectData);
-		if (count < total)
-			status = STATUS_MORE_ENTRIES;
-		break;
-	}
-
-	case KExploreIoctls::OpenObject: {
-		if (inputLen < sizeof(OpenHandleData)) {
-			status = STATUS_INVALID_BUFFER_SIZE;
-			break;
-		}
-		HANDLE hObject = nullptr;
-		auto data = static_cast<OpenHandleData*>(Irp->AssociatedIrp.SystemBuffer);
-		status = ObOpenObjectByPointer(data->Object, 0, nullptr, data->AccessMask, nullptr, KernelMode, &hObject);
-		if (NT_SUCCESS(status)) {
-			*(HANDLE*)data = hObject;
-			len = sizeof(HANDLE);
-		}
-		break;
-	}
-
-	case KExploreIoctls::CloseHandle: {
-		auto size = inputLen;
-		if (size == 0 || size % sizeof(HANDLE) != 0) {
-			status = STATUS_INVALID_BUFFER_SIZE;
+			len = count * sizeof(KernelObjectData);
+			if (count < total)
+				status = STATUS_MORE_ENTRIES;
 			break;
 		}
 
-		auto handles = static_cast<HANDLE*>(Irp->AssociatedIrp.SystemBuffer);
-		int count = size / sizeof(HANDLE);
-		for (int i = 0; i < count; i++) {
-			ZwClose(handles[i]);
-		}
-		len = size;
-		break;
-	}
-
-	case KExploreIoctls::ReadMemory: {
-		if (inputLen < sizeof(PVOID)) {
-			status = STATUS_INVALID_BUFFER_SIZE;
-			break;
-		}
-
-		auto memory = *static_cast<void**>(Irp->AssociatedIrp.SystemBuffer);
-		auto size = outputLen;
-		auto data = MmGetSystemAddressForMdlSafe(Irp->MdlAddress, NormalPagePriority);
-		if (data == nullptr) {
-			status = STATUS_INSUFFICIENT_RESOURCES;
-			KdPrint((DRIVER_PREFIX "failed in MmgetSystemAddressForMdlSafe\n"));
-			break;
-		}
-
-		// perform the read
-		RtlCopyMemory(data, memory, size);
-		len = size;
-		break;
-	}
-
-	case KExploreIoctls::WriteMemory: {
-		if (inputLen < sizeof(PVOID)) {
-			status = STATUS_BUFFER_TOO_SMALL;
-			break;
-		}
-		auto memory = *static_cast<void**>(Irp->AssociatedIrp.SystemBuffer);
-		len = outputLen;
-		auto data = MmGetSystemAddressForMdlSafe(Irp->MdlAddress, NormalPagePriority);
-		if (data == nullptr) {
-			status = STATUS_INSUFFICIENT_RESOURCES;
-			KdPrint((DRIVER_PREFIX "failed in MmgetSystemAddressForMdlSafe\n"));
-			break;
-		}
-
-		// perform the write
-		RtlCopyMemory(memory, data, len);
-		break;
-	}
-
-	case KExploreIoctls::OpenProcess: {
-		if (inputLen < sizeof(OpenProcessData) || outputLen < sizeof(HANDLE)) {
-			status = STATUS_BUFFER_TOO_SMALL;
-			break;
-		}
-
-		auto data = static_cast<OpenProcessData*>(Irp->AssociatedIrp.SystemBuffer);
-		PEPROCESS process;
-		status = PsLookupProcessByProcessId(ULongToHandle(data->ProcessId), &process);
-		if (NT_SUCCESS(status)) {
-			HANDLE hProcess;
-			status = ObOpenObjectByPointer(process, 0, nullptr, data->AccessMask, *PsProcessType, KernelMode, &hProcess);
-			ObDereferenceObject(process);
+		case KExploreIoctls::OpenObject:
+		{
+			if (inputLen < sizeof(OpenHandleData)) {
+				status = STATUS_INVALID_BUFFER_SIZE;
+				break;
+			}
+			HANDLE hObject = nullptr;
+			auto data = static_cast<OpenHandleData*>(Irp->AssociatedIrp.SystemBuffer);
+			status = ObOpenObjectByPointer(data->Object, 0, nullptr, data->AccessMask, nullptr, KernelMode, &hObject);
 			if (NT_SUCCESS(status)) {
-				*(HANDLE*)Irp->AssociatedIrp.SystemBuffer = hProcess;
+				*(HANDLE*)data = hObject;
 				len = sizeof(HANDLE);
 			}
-		}
-		break;
-	}
-
-	case KExploreIoctls::OpenThread: {
-		if (inputLen < sizeof(OpenThreadData) || outputLen < sizeof(HANDLE)) {
-			status = STATUS_BUFFER_TOO_SMALL;
 			break;
 		}
 
-		auto data = static_cast<OpenThreadData*>(Irp->AssociatedIrp.SystemBuffer);
-		PETHREAD thread;
-		status = PsLookupThreadByThreadId(ULongToHandle(data->ThreadId), &thread);
-		if (NT_SUCCESS(status)) {
-			HANDLE hThread;
-			status = ObOpenObjectByPointer(thread, 0, nullptr, data->AccessMask, *PsThreadType, KernelMode, &hThread);
-			ObDereferenceObject(thread);
-			if (NT_SUCCESS(status)) {
-				*(HANDLE*)Irp->AssociatedIrp.SystemBuffer = hThread;
-				len = sizeof(HANDLE);
+		case KExploreIoctls::CloseHandle:
+		{
+			auto size = inputLen;
+			if (size == 0 || size % sizeof(HANDLE) != 0) {
+				status = STATUS_INVALID_BUFFER_SIZE;
+				break;
 			}
-		}
-		break;
-	}
 
-	case KExploreIoctls::ReadProcessMemory: {
-		if (stack->Parameters.DeviceIoControl.InputBufferLength < sizeof(ReadWriteProcessMemoryData)) {
-			status = STATUS_INVALID_BUFFER_SIZE;
+			auto handles = static_cast<HANDLE*>(Irp->AssociatedIrp.SystemBuffer);
+			int count = size / sizeof(HANDLE);
+			for (int i = 0; i < count; i++) {
+				ZwClose(handles[i]);
+			}
+			len = size;
 			break;
 		}
 
-		auto data = static_cast<ReadWriteProcessMemoryData*>(Irp->AssociatedIrp.SystemBuffer);
-		PEPROCESS targetProcess;
-		KAPC_STATE apcState;
+		case KExploreIoctls::ReadMemory:
+		{
+			if (inputLen < sizeof(PVOID)) {
+				status = STATUS_INVALID_BUFFER_SIZE;
+				break;
+			}
 
-		// get target process
-		status = PsLookupProcessByProcessId(UlongToHandle(data->ProcessId), &targetProcess);
-		if (!NT_SUCCESS(status))
-			break;
+			auto memory = *static_cast<void**>(Irp->AssociatedIrp.SystemBuffer);
+			auto size = outputLen;
+			auto data = MmGetSystemAddressForMdlSafe(Irp->MdlAddress, NormalPagePriority);
+			if (data == nullptr) {
+				status = STATUS_INSUFFICIENT_RESOURCES;
+				KdPrint((DRIVER_PREFIX "failed in MmgetSystemAddressForMdlSafe\n"));
+				break;
+			}
 
-		auto buffer = MmGetSystemAddressForMdlSafe(Irp->MdlAddress, NormalPagePriority);
-		if (buffer == nullptr) {
-			status = STATUS_INSUFFICIENT_RESOURCES;
-			KdPrint((DRIVER_PREFIX "failed in MmgetSystemAddressForMdlSafe\n"));
-			break;
-		}
-		len = stack->Parameters.DeviceIoControl.OutputBufferLength;
-
-		// attach to the address space of the target process
-		KeStackAttachProcess(targetProcess, &apcState);
-
-		__try {
 			// perform the read
-			RtlCopyMemory(buffer, data->Address, len);
-		}
-		__except (EXCEPTION_EXECUTE_HANDLER) {
-			status = STATUS_ACCESS_VIOLATION;
-			len = 0;
-		}
-
-		// detach
-		KeUnstackDetachProcess(&apcState);
-		ObDereferenceObject(targetProcess);
-
-		break;
-	}
-
-	case KExploreIoctls::WriteProcessMemory: {
-		if (stack->Parameters.DeviceIoControl.InputBufferLength < sizeof(ReadWriteProcessMemoryData)) {
-			status = STATUS_INVALID_BUFFER_SIZE;
+			RtlCopyMemory(data, memory, size);
+			len = size;
 			break;
 		}
 
-		auto data = static_cast<ReadWriteProcessMemoryData*>(Irp->AssociatedIrp.SystemBuffer);
-		PEPROCESS targetProcess;
-		KAPC_STATE apcState;
+		case KExploreIoctls::WriteMemory:
+		{
+			if (inputLen < sizeof(PVOID)) {
+				status = STATUS_BUFFER_TOO_SMALL;
+				break;
+			}
+			auto memory = *static_cast<void**>(Irp->AssociatedIrp.SystemBuffer);
+			len = outputLen;
+			auto data = MmGetSystemAddressForMdlSafe(Irp->MdlAddress, NormalPagePriority);
+			if (data == nullptr) {
+				status = STATUS_INSUFFICIENT_RESOURCES;
+				KdPrint((DRIVER_PREFIX "failed in MmgetSystemAddressForMdlSafe\n"));
+				break;
+			}
 
-		// get target process
-		status = PsLookupProcessByProcessId(reinterpret_cast<HANDLE>(data->ProcessId), &targetProcess);
-		if (!NT_SUCCESS(status))
-			break;
-
-		auto buffer = MmGetSystemAddressForMdlSafe(Irp->MdlAddress, NormalPagePriority);
-		if (buffer == nullptr) {
-			status = STATUS_INSUFFICIENT_RESOURCES;
-			KdPrint((DRIVER_PREFIX "failed in MmgetSystemAddressForMdlSafe\n"));
-			break;
-		}
-		len = stack->Parameters.DeviceIoControl.OutputBufferLength;
-
-		// attach to the address space of the target process
-		KeStackAttachProcess(targetProcess, &apcState);
-
-		__try {
 			// perform the write
-			RtlCopyMemory(data->Address, buffer, len);
-		}
-		__except (EXCEPTION_EXECUTE_HANDLER) {
-			status = STATUS_ACCESS_VIOLATION;
-			len = 0;
-		}
-
-		// detach
-		KeUnstackDetachProcess(&apcState);
-		ObDereferenceObject(targetProcess);
-		break;
-	}
-
-	case KExploreIoctls::InitKernelFunctions: {
-		auto size = stack->Parameters.DeviceIoControl.InputBufferLength;
-		if (size == 0 || size % sizeof(PVOID) != 0) {
-			status = STATUS_INVALID_BUFFER_SIZE;
+			RtlCopyMemory(memory, data, len);
 			break;
 		}
 
-		len = min(size, sizeof(KernelFunctions));
-		RtlCopyMemory(&g_KernelFunctions, Irp->AssociatedIrp.SystemBuffer, len);
-		break;
-	}
+		case KExploreIoctls::OpenProcess:
+		{
+			if (inputLen < sizeof(OpenProcessData) || outputLen < sizeof(HANDLE)) {
+				status = STATUS_BUFFER_TOO_SMALL;
+				break;
+			}
 
-	case KExploreIoctls::EnumProcesses: {
-		auto PsGetNextProcess = g_KernelFunctions.PsGetNextProcess;
-		if (PsGetNextProcess == nullptr) {
-			status = STATUS_NOT_FOUND;
-			break;
-		}
-
-		auto size = stack->Parameters.DeviceIoControl.OutputBufferLength;
-		if (size == 0 || size % sizeof(KernelObjectData) != 0) {
-			status = STATUS_INVALID_BUFFER_SIZE;
-			break;
-		}
-
-		if(stack->Parameters.DeviceIoControl.InputBufferLength < sizeof(ACCESS_MASK)) {
-			status = STATUS_BUFFER_TOO_SMALL;
-			break;
-		}
-
-		auto buffer = Irp->AssociatedIrp.SystemBuffer;
-		auto accessMask = *static_cast<ACCESS_MASK*>(buffer);
-		auto output = static_cast<KernelObjectData*>(buffer);
-		int count = 0, total = 0;
-		KernelObjectData data;
-		for (auto process = PsGetNextProcess(nullptr); process; process = PsGetNextProcess(process)) {
-			total++;
-			if (size >= sizeof(data)) {
-				data.Address = process;
-				if (NT_SUCCESS(ObOpenObjectByPointer(process, 0, nullptr, accessMask, nullptr, KernelMode, &data.Handle))) {
-					output[count++] = data;
-					size -= sizeof(data);
+			auto data = static_cast<OpenProcessData*>(Irp->AssociatedIrp.SystemBuffer);
+			PEPROCESS process;
+			status = PsLookupProcessByProcessId(ULongToHandle(data->ProcessId), &process);
+			if (NT_SUCCESS(status)) {
+				HANDLE hProcess;
+				status = ObOpenObjectByPointer(process, 0, nullptr, data->AccessMask, *PsProcessType, KernelMode, &hProcess);
+				ObDereferenceObject(process);
+				if (NT_SUCCESS(status)) {
+					*(HANDLE*)Irp->AssociatedIrp.SystemBuffer = hProcess;
+					len = sizeof(HANDLE);
 				}
 			}
-		}
-
-		len = count * sizeof(data);
-		if (count < total)
-			status = STATUS_MORE_ENTRIES;
-		break;
-	}
-
-	case KExploreIoctls::DereferenceObjects: {
-		auto size = stack->Parameters.DeviceIoControl.InputBufferLength;
-		if (size == 0 || size % sizeof(PVOID) != 0) {
-			status = STATUS_INVALID_BUFFER_SIZE;
 			break;
 		}
-		auto objects = static_cast<void**>(Irp->AssociatedIrp.SystemBuffer);
-		for (int i = 0; i < size / sizeof(PVOID); i++) {
-			ObDereferenceObject(objects[i]);
-		}
-		len = size;
-		break;
-	}
 
-	default:
-		status = STATUS_INVALID_DEVICE_REQUEST;
-		break;
+		case KExploreIoctls::OpenThread:
+		{
+			if (inputLen < sizeof(OpenThreadData) || outputLen < sizeof(HANDLE)) {
+				status = STATUS_BUFFER_TOO_SMALL;
+				break;
+			}
+
+			auto data = static_cast<OpenThreadData*>(Irp->AssociatedIrp.SystemBuffer);
+			PETHREAD thread;
+			status = PsLookupThreadByThreadId(ULongToHandle(data->ThreadId), &thread);
+			if (NT_SUCCESS(status)) {
+				HANDLE hThread;
+				status = ObOpenObjectByPointer(thread, 0, nullptr, data->AccessMask, *PsThreadType, KernelMode, &hThread);
+				ObDereferenceObject(thread);
+				if (NT_SUCCESS(status)) {
+					*(HANDLE*)Irp->AssociatedIrp.SystemBuffer = hThread;
+					len = sizeof(HANDLE);
+				}
+			}
+			break;
+		}
+
+		case KExploreIoctls::ReadProcessMemory:
+		{
+			if (stack->Parameters.DeviceIoControl.InputBufferLength < sizeof(ReadWriteProcessMemoryData)) {
+				status = STATUS_INVALID_BUFFER_SIZE;
+				break;
+			}
+
+			auto data = static_cast<ReadWriteProcessMemoryData*>(Irp->AssociatedIrp.SystemBuffer);
+			PEPROCESS targetProcess;
+			KAPC_STATE apcState;
+
+			// get target process
+			status = PsLookupProcessByProcessId(UlongToHandle(data->ProcessId), &targetProcess);
+			if (!NT_SUCCESS(status))
+				break;
+
+			auto buffer = MmGetSystemAddressForMdlSafe(Irp->MdlAddress, NormalPagePriority);
+			if (buffer == nullptr) {
+				status = STATUS_INSUFFICIENT_RESOURCES;
+				KdPrint((DRIVER_PREFIX "failed in MmgetSystemAddressForMdlSafe\n"));
+				break;
+			}
+			len = stack->Parameters.DeviceIoControl.OutputBufferLength;
+
+			// attach to the address space of the target process
+			KeStackAttachProcess(targetProcess, &apcState);
+
+			__try {
+				// perform the read
+				RtlCopyMemory(buffer, data->Address, len);
+			}
+			__except (EXCEPTION_EXECUTE_HANDLER) {
+				status = STATUS_ACCESS_VIOLATION;
+				len = 0;
+			}
+
+			// detach
+			KeUnstackDetachProcess(&apcState);
+			ObDereferenceObject(targetProcess);
+
+			break;
+		}
+
+		case KExploreIoctls::WriteProcessMemory:
+		{
+			if (stack->Parameters.DeviceIoControl.InputBufferLength < sizeof(ReadWriteProcessMemoryData)) {
+				status = STATUS_INVALID_BUFFER_SIZE;
+				break;
+			}
+
+			auto data = static_cast<ReadWriteProcessMemoryData*>(Irp->AssociatedIrp.SystemBuffer);
+			PEPROCESS targetProcess;
+			KAPC_STATE apcState;
+
+			// get target process
+			status = PsLookupProcessByProcessId(reinterpret_cast<HANDLE>(data->ProcessId), &targetProcess);
+			if (!NT_SUCCESS(status))
+				break;
+
+			auto buffer = MmGetSystemAddressForMdlSafe(Irp->MdlAddress, NormalPagePriority);
+			if (buffer == nullptr) {
+				status = STATUS_INSUFFICIENT_RESOURCES;
+				KdPrint((DRIVER_PREFIX "failed in MmgetSystemAddressForMdlSafe\n"));
+				break;
+			}
+			len = stack->Parameters.DeviceIoControl.OutputBufferLength;
+
+			// attach to the address space of the target process
+			KeStackAttachProcess(targetProcess, &apcState);
+
+			__try {
+				// perform the write
+				RtlCopyMemory(data->Address, buffer, len);
+			}
+			__except (EXCEPTION_EXECUTE_HANDLER) {
+				status = STATUS_ACCESS_VIOLATION;
+				len = 0;
+			}
+
+			// detach
+			KeUnstackDetachProcess(&apcState);
+			ObDereferenceObject(targetProcess);
+			break;
+		}
+
+		case KExploreIoctls::InitKernelFunctions:
+		{
+			auto size = stack->Parameters.DeviceIoControl.InputBufferLength;
+			if (size == 0 || size % sizeof(PVOID) != 0) {
+				status = STATUS_INVALID_BUFFER_SIZE;
+				break;
+			}
+
+			len = min(size, sizeof(KernelFunctions));
+			RtlCopyMemory(&g_KernelFunctions, Irp->AssociatedIrp.SystemBuffer, len);
+			break;
+		}
+
+		case KExploreIoctls::EnumProcesses:
+		{
+			auto PsGetNextProcess = g_KernelFunctions.PsGetNextProcess;
+			if (PsGetNextProcess == nullptr) {
+				status = STATUS_NOT_FOUND;
+				break;
+			}
+
+			auto size = stack->Parameters.DeviceIoControl.OutputBufferLength;
+			if (size == 0 || size % sizeof(KernelObjectData) != 0) {
+				status = STATUS_INVALID_BUFFER_SIZE;
+				break;
+			}
+
+			if (stack->Parameters.DeviceIoControl.InputBufferLength < sizeof(ACCESS_MASK)) {
+				status = STATUS_BUFFER_TOO_SMALL;
+				break;
+			}
+
+			auto buffer = Irp->AssociatedIrp.SystemBuffer;
+			auto accessMask = *static_cast<ACCESS_MASK*>(buffer);
+			auto output = static_cast<KernelObjectData*>(buffer);
+			int count = 0, total = 0;
+			KernelObjectData data;
+			for (auto process = PsGetNextProcess(nullptr); process; process = PsGetNextProcess(process)) {
+				total++;
+				if (size >= sizeof(data)) {
+					data.Address = process;
+					if (NT_SUCCESS(ObOpenObjectByPointer(process, 0, nullptr, accessMask, nullptr, KernelMode, &data.Handle))) {
+						output[count++] = data;
+						size -= sizeof(data);
+					}
+				}
+			}
+
+			len = count * sizeof(data);
+			if (count < total)
+				status = STATUS_MORE_ENTRIES;
+			break;
+		}
+
+		case KExploreIoctls::DereferenceObjects:
+		{
+			auto size = stack->Parameters.DeviceIoControl.InputBufferLength;
+			if (size == 0 || size % sizeof(PVOID) != 0) {
+				status = STATUS_INVALID_BUFFER_SIZE;
+				break;
+			}
+			auto objects = static_cast<void**>(Irp->AssociatedIrp.SystemBuffer);
+			for (int i = 0; i < size / sizeof(PVOID); i++) {
+				ObDereferenceObject(objects[i]);
+			}
+			len = size;
+			break;
+		}
+
+		case KExploreIoctls::EnumObjecs:
+			// this only works if the "Maintain a list of objects for each type" global flag is set
+		{
+			if (outputLen < 4) {
+				status = STATUS_BUFFER_TOO_SMALL;
+				break;
+			}
+			auto buffer = MmGetSystemAddressForMdlSafe(Irp->MdlAddress, NormalPagePriority);
+			if (buffer == nullptr) {
+				status = STATUS_INSUFFICIENT_RESOURCES;
+				break;
+			}
+			ULONG needed;
+			status = ZwQuerySystemInformation(SystemInformationClass::ObjectInformation, buffer, outputLen, &needed);
+			if (status == STATUS_BUFFER_TOO_SMALL) {
+				*(ULONG*)buffer = needed;
+				len = sizeof(ULONG);
+				break;
+			}
+			if (NT_SUCCESS(status)) {
+				len = needed;
+			}
+			break;
+		}
+
+		default:
+			status = STATUS_INVALID_DEVICE_REQUEST;
+			break;
 	}
 
 	Irp->IoStatus.Status = status;

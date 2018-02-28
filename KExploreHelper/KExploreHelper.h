@@ -7,4 +7,5 @@ public:
     static bool InstallDriver(PCWSTR name, PCWSTR sysFilePath);
     static HANDLE OpenDriverHandle(PCWSTR name = nullptr);
     static bool ExtractResourceToFile(HMODULE hModule, PCWSTR resourceName, PCWSTR targetFile);
+	static HANDLE OpenDriverHandleAllTheWay(PCWSTR name = nullptr);
 };

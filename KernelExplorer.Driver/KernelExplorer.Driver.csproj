@@ -9,7 +9,7 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>KernelExplorer.Driver</RootNamespace>
     <AssemblyName>KernelExplorer.Driver</AssemblyName>
-    <TargetFrameworkVersion>v4.6.2</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <TargetFrameworkProfile />
   </PropertyGroup>
@@ -55,11 +55,11 @@
     <Reference Include="System.Data" />
     <Reference Include="System.Net.Http" />
     <Reference Include="System.Xml" />
-    <Reference Include="Zodiacon.ManagedWindows.Core, Version=1.0.6543.29032, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Zodiacon.ManagedWindows.Processes.0.1.11\lib\net45\Zodiacon.ManagedWindows.Core.dll</HintPath>
+    <Reference Include="Zodiacon.ManagedWindows.Core, Version=1.0.6615.23341, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Zodiacon.ManagedWindows.Processes.0.2.6\lib\net45\Zodiacon.ManagedWindows.Core.dll</HintPath>
     </Reference>
-    <Reference Include="Zodiacon.ManagedWindows.Processes, Version=1.0.6546.24855, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Zodiacon.ManagedWindows.Processes.0.1.11\lib\net45\Zodiacon.ManagedWindows.Processes.dll</HintPath>
+    <Reference Include="Zodiacon.ManagedWindows.Processes, Version=1.0.6615.23355, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Zodiacon.ManagedWindows.Processes.0.2.6\lib\net45\Zodiacon.ManagedWindows.Processes.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>

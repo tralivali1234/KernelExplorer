@@ -1,11 +1,14 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
-VisualStudioVersion = 15.0.27128.1
+VisualStudioVersion = 15.0.27130.2027
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "KExplore", "KExplore\KExplore.vcxproj", "{E96B9A14-28CD-4D69-9D8B-7A0A69543A01}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "KExploreHelper", "KExploreHelper\KExploreHelper.vcxproj", "{2F00036D-C293-4C9D-9267-784C11C01ED6}"
+	ProjectSection(ProjectDependencies) = postProject
+		{E96B9A14-28CD-4D69-9D8B-7A0A69543A01} = {E96B9A14-28CD-4D69-9D8B-7A0A69543A01}
+	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "JobList", "JobList\JobList.vcxproj", "{74D4ED9A-6D7E-45D4-9016-46C8F183B739}"
 	ProjectSection(ProjectDependencies) = postProject
@@ -17,10 +20,16 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KernelExplorer.Driver", "KernelExplorer.Driver\KernelExplorer.Driver.csproj", "{98412CD8-28D6-4135-A6F2-F95305B7ED33}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ProcList", "ProcList\ProcList.vcxproj", "{7F9CD588-E2B5-4953-B317-FE66E025983B}"
+	ProjectSection(ProjectDependencies) = postProject
+		{E96B9A14-28CD-4D69-9D8B-7A0A69543A01} = {E96B9A14-28CD-4D69-9D8B-7A0A69543A01}
+	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "MemMap", "MemMap\MemMap.vcxproj", "{C43F2B17-A6EE-42B9-B6A3-80AD74C9317F}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MemMapView", "MemMapView\MemMapView.csproj", "{3F14CB03-DC75-49E0-AC94-61E5BF951CFA}"
+	ProjectSection(ProjectDependencies) = postProject
+		{E96B9A14-28CD-4D69-9D8B-7A0A69543A01} = {E96B9A14-28CD-4D69-9D8B-7A0A69543A01}
+	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tools", "Tools", "{99AA5299-6C5D-4FDB-9E01-53E970D6DB49}"
 EndProject
@@ -216,6 +225,7 @@ Global
 		{C43F2B17-A6EE-42B9-B6A3-80AD74C9317F}.Debug|ARM64.ActiveCfg = Debug|Win32
 		{C43F2B17-A6EE-42B9-B6A3-80AD74C9317F}.Debug|x64.ActiveCfg = Debug|x64
 		{C43F2B17-A6EE-42B9-B6A3-80AD74C9317F}.Debug|x64.Build.0 = Debug|x64
+		{C43F2B17-A6EE-42B9-B6A3-80AD74C9317F}.Debug|x64.Deploy.0 = Debug|x64
 		{C43F2B17-A6EE-42B9-B6A3-80AD74C9317F}.Debug|x86.ActiveCfg = Debug|Win32
 		{C43F2B17-A6EE-42B9-B6A3-80AD74C9317F}.Debug|x86.Build.0 = Debug|Win32
 		{C43F2B17-A6EE-42B9-B6A3-80AD74C9317F}.Release|Any CPU.ActiveCfg = Release|Win32

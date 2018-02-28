@@ -55,25 +55,25 @@
     <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="ControlzEx, Version=3.0.2.4, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\ControlzEx.3.0.2.4\lib\net45\ControlzEx.dll</HintPath>
+    </Reference>
     <Reference Include="DebugHelp, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\DebugHelp.0.3.2\lib\net40\DebugHelp.dll</HintPath>
-      <Private>False</Private>
+      <HintPath>..\packages\DebugHelp.0.4.3\lib\net40\DebugHelp.dll</HintPath>
     </Reference>
-    <Reference Include="MahApps.Metro, Version=1.6.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\MahApps.Metro.1.6.0-alpha004\lib\net45\MahApps.Metro.dll</HintPath>
-      <Private>False</Private>
+    <Reference Include="MahApps.Metro, Version=1.6.0.362, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\MahApps.Metro.1.6.0\lib\net45\MahApps.Metro.dll</HintPath>
     </Reference>
-    <Reference Include="Prism, Version=6.3.0.0, Culture=neutral, PublicKeyToken=40ee6c3a2184dc59, processorArchitecture=MSIL">
-      <HintPath>..\packages\Prism.Core.6.3.0\lib\net45\Prism.dll</HintPath>
-      <Private>False</Private>
+    <Reference Include="Prism, Version=7.0.0.396, Culture=neutral, PublicKeyToken=40ee6c3a2184dc59, processorArchitecture=MSIL">
+      <HintPath>..\packages\Prism.Core.7.0.0.396\lib\net45\Prism.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.ComponentModel.Composition" />
     <Reference Include="System.Data" />
     <Reference Include="System.ServiceProcess" />
     <Reference Include="System.Windows.Interactivity, Version=4.5.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <HintPath>..\packages\MahApps.Metro.1.6.0-alpha004\lib\net45\System.Windows.Interactivity.dll</HintPath>
-      <Private>False</Private>
+      <HintPath>..\packages\ControlzEx.3.0.2.4\lib\net45\System.Windows.Interactivity.dll</HintPath>
+      <Private>True</Private>
     </Reference>
     <Reference Include="System.Xml" />
     <Reference Include="Microsoft.CSharp" />
@@ -87,9 +87,8 @@
     <Reference Include="WindowsBase" />
     <Reference Include="PresentationCore" />
     <Reference Include="PresentationFramework" />
-    <Reference Include="Zodiacon.WPF, Version=1.1.6386.33504, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Zodiacon.WPF.1.2.13\lib\net45\Zodiacon.WPF.dll</HintPath>
-      <Private>False</Private>
+    <Reference Include="Zodiacon.WPF, Version=1.1.6599.28064, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Zodiacon.WPF.1.2.17\lib\net45\Zodiacon.WPF.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>
@@ -184,7 +183,6 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Assemblies\DebugHelp.dll" />
     <Resource Include="Icons\list.ico" />
     <Resource Include="Icons\tree.ico" />
   </ItemGroup>
@@ -210,22 +208,8 @@
     <Resource Include="Icons\job_plus.ico" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="..\packages\MahApps.Metro.1.6.0-alpha004\lib\net45\MahApps.Metro.dll">
-      <Link>Assemblies\MahApps.Metro.dll</Link>
-    </EmbeddedResource>
-    <EmbeddedResource Include="..\packages\MahApps.Metro.1.6.0-alpha004\lib\net45\System.Windows.Interactivity.dll">
-      <Link>Assemblies\System.Windows.Interactivity.dll</Link>
-    </EmbeddedResource>
-    <EmbeddedResource Include="..\packages\Prism.Core.6.3.0\lib\net45\Prism.dll">
-      <Link>Assemblies\Prism.dll</Link>
-    </EmbeddedResource>
-  </ItemGroup>
-  <ItemGroup>
     <EmbeddedResource Include="NativeBinaries\DbgHelp.dll" />
     <EmbeddedResource Include="NativeBinaries\SymSrv.dll" />
-  </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Include="Assemblies\Zodiacon.WPF.dll" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

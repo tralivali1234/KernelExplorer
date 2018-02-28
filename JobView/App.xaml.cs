@@ -20,21 +20,6 @@ namespace JobView {
 
 		public static string Title => "Job Objects View";
 
-		[MethodImpl(MethodImplOptions.NoInlining)]
-		private void LoadAssemblies() {
-			var appAssembly = Assembly.GetExecutingAssembly();
-			foreach (var resourceName in appAssembly.GetManifestResourceNames()) {
-				if (resourceName.StartsWith("jobview.assemblies", StringComparison.InvariantCultureIgnoreCase)) {
-					using (var stream = appAssembly.GetManifestResourceStream(resourceName)) {
-						var assemblyData = new byte[(int)stream.Length];
-						stream.Read(assemblyData, 0, assemblyData.Length);
-						var assembly = Assembly.Load(assemblyData);
-						_assemblies.Add(assembly.GetName().Name, assembly);
-					}
-				}
-			}
-			AppDomain.CurrentDomain.AssemblyResolve += OnAssemblyResolve;
-		}
 
 		void LoadNativeModules() {
 			var appAssembly = Assembly.GetExecutingAssembly();
@@ -66,7 +51,6 @@ namespace JobView {
 		}
 
 		public App() {
-			LoadAssemblies();
 			LoadNativeModules();
 		}
 

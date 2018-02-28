@@ -123,6 +123,14 @@ namespace KernelExplorer.Driver {
 			return controller.Status;
 		}
 
+        public unsafe IntPtr OpenObject(UIntPtr objectAddress, uint accessMask) {
+            OpenHandleData data;
+            data.AccessMask = accessMask;
+            data.Object = objectAddress;
+
+            return DeviceIoControl(_hDevice, KExploreOpenHandle, ref data, sizeof(OpenHandleData), out var handle, sizeof(IntPtr), out var returned) ? handle : IntPtr.Zero;
+        }
+
 		public static async Task<bool> InstallDriverAsync(string drivername, string driverpath) {
 			await Task.Run(() => {
 				var hScm = OpenSCManager(null, null, ServiceAccessMask.AllAccess);

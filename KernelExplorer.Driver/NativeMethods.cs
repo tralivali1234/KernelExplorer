@@ -12,7 +12,7 @@ using Zodiacon.ManagedWindows.Processes;
 namespace KernelExplorer.Driver {
 	[SuppressUnmanagedCodeSecurity]
 	public static class NativeMethods {
-		[StructLayout(LayoutKind.Sequential)]
+        [StructLayout(LayoutKind.Sequential)]
 		public unsafe struct UnicodeString {
 			ushort Length;
 			ushort MaximumLength;

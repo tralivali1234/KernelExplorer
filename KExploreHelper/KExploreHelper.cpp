@@ -10,14 +10,9 @@ void* KExploreHelper::GetKernelBaseAddress() {
 }
 
 HANDLE KExploreHelper::OpenDriverHandle(PCWSTR name) {
-    return ::CreateFile(
-        name == nullptr ? L"\\\\.\\KExplore" : name,
-        GENERIC_READ | GENERIC_WRITE,
-        FILE_SHARE_READ | FILE_SHARE_WRITE,
-        nullptr,
-        OPEN_EXISTING,
-        0,
-        nullptr);
+	WCHAR fullname[64] = L"\\\\.\\";
+	::wcscat_s(fullname, name ? name : L"kexplore");
+    return ::CreateFile(fullname, GENERIC_READ | GENERIC_WRITE, FILE_SHARE_READ | FILE_SHARE_WRITE, nullptr, OPEN_EXISTING, 0, nullptr);
 }
 
 bool KExploreHelper::ExtractResourceToFile(HMODULE hModule, PCWSTR resourceName, PCWSTR targetFile) {
@@ -66,6 +61,18 @@ bool KExploreHelper::InstallDriver(PCWSTR name, PCWSTR sysFilePath) {
     auto hScm = ::OpenSCManager(nullptr, nullptr, SC_MANAGER_ALL_ACCESS);
     if(hScm == nullptr)
         return false;
+	WCHAR path[MAX_PATH];
+	if (::wcschr(sysFilePath, L'\\') == 0) {
+		// just file name, use output directory
+		if (::GetModuleFileName(nullptr, path, MAX_PATH) > 0) {
+			*(::wcsrchr(path, L'\\') + 1) = 0;
+			::wcscat_s(path, sysFilePath);
+			::wcscat_s(path, L".sys");
+			sysFilePath = path;
+		}
+
+	}
+
     auto hService = ::CreateService(hScm, name, name, SERVICE_ALL_ACCESS, 
         SERVICE_KERNEL_DRIVER, SERVICE_DEMAND_START, SERVICE_ERROR_NORMAL, sysFilePath,
         nullptr, nullptr, nullptr, nullptr, nullptr);
@@ -76,5 +83,19 @@ bool KExploreHelper::InstallDriver(PCWSTR name, PCWSTR sysFilePath) {
     ::CloseServiceHandle(hScm);
 
     return ok;
+}
+
+HANDLE KExploreHelper::OpenDriverHandleAllTheWay(PCWSTR name) {
+	auto hDevice = OpenDriverHandle(name);
+	if (hDevice != INVALID_HANDLE_VALUE)
+		return hDevice;
+
+	if (LoadDriver(name))
+		return OpenDriverHandle(name);
+
+	if (InstallDriver(name, name) && LoadDriver(name))
+		return OpenDriverHandle(name);
+
+	return INVALID_HANDLE_VALUE;
 }
 
