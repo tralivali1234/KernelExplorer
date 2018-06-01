@@ -34,26 +34,28 @@ namespace JobView.ViewModels {
 		public JobObjectViewModel Job {
 			get { return _job; }
 			set {
-				SetProperty(ref _job, value);
+                if (SetProperty(ref _job, value)) {
 
-				_jobHadle = _job?.Job.Handle;
+                    _jobHadle = _job?.Job.Handle;
 
-				_processes = null;
+                    _processes = null;
 
-				// refresh all properties
-				RaisePropertyChanged(nameof(Name));
-				RaisePropertyChanged(nameof(Address));
-				RaisePropertyChanged(nameof(ChildJobs));
-				RaisePropertyChanged(nameof(IsJobSelected));
-				RaisePropertyChanged(nameof(ParentJob));
-				RaisePropertyChanged(nameof(Processes));
-				RaisePropertyChanged(nameof(JobInformation));
-				RaisePropertyChanged(nameof(JobId));
+                    // refresh all properties
+                    RaisePropertyChanged(nameof(Name));
+                    RaisePropertyChanged(nameof(Address));
+                    RaisePropertyChanged(nameof(ChildJobs));
+                    RaisePropertyChanged(nameof(IsJobSelected));
+                    RaisePropertyChanged(nameof(ParentJob));
+                    RaisePropertyChanged(nameof(Processes));
+                    RaisePropertyChanged(nameof(JobInformation));
+                    RaisePropertyChanged(nameof(JobId));
+                    RaisePropertyChanged(nameof(JobLimits));
+                }
 			}
 		}
 
 		public string Name => _job?.Name;
-		public ulong? Address => _job?.Address;
+        public ulong? Address => _job?.Address;
 
 		public int? JobId => _job?.JobId;
 
@@ -82,5 +84,115 @@ namespace JobView.ViewModels {
 
 		public JobObjectInformation JobInformation => _job?.JobInformation;
 
+        public IEnumerable<object> JobLimits {
+            get {
+                var info = JobInformation;
+                if (info == null)
+                    yield break;
+
+                if (info.LimitFlags.HasFlag(JobLimitFlags.ActiveProcesses)) {
+                    yield return new {
+                        Name = "Active Process Limit:",
+                        Value = info.ActiveProcessLimit
+                    };
+                }
+
+                if (info.LimitFlags.HasFlag(JobLimitFlags.ProcessTime)) {
+                    yield return new {
+                        Name = "Process Time Limit:",
+                        Value = new TimeSpan(info.PerProcessUserTimeLimit).ToString()
+                    };
+                }
+
+                if (info.LimitFlags.HasFlag(JobLimitFlags.JobTime)) {
+                    yield return new {
+                        Name = "Job Time Limit:",
+                        Value = new TimeSpan(info.PerJobUserTimeLimit).ToString()
+                    };
+                }
+
+                if (info.LimitFlags.HasFlag(JobLimitFlags.WorkingSet)) {
+                    yield return new {
+                        Name = "Minimum Working Set:",
+                        Value = (info.MinimumWorkingSetSize >> 10).ToString("N0") + " KB"
+                    };
+                    yield return new {
+                        Name = "Maximum Working Set:",
+                        Value = (info.MaximumWorkingSetSize >> 10).ToString("N0") + " KB"
+                    };
+                }
+
+                if (info.LimitFlags.HasFlag(JobLimitFlags.ProcessMemory)) {
+                    yield return new {
+                        Name = "Process Commit Limit:",
+                        Value = (info.ProcessMemoryLimit >> 10).ToString("N0") + " KB"
+                    };
+                }
+
+                if (info.LimitFlags.HasFlag(JobLimitFlags.JobMemory)) {
+                    yield return new {
+                        Name = "Job Commit Limit:",
+                        Value = (info.JobMemoryLimit >> 10).ToString("N0") + " KB"
+                    };
+                }
+
+                if (info.LimitFlags.HasFlag(JobLimitFlags.Affinity)) {
+                    yield return new {
+                        Name = "Affinity:",
+                        Value = "0x" + info.Affinity.ToString("X")
+                    };
+                }
+
+                if (info.LimitFlags.HasFlag(JobLimitFlags.PriorityClass)) {
+                    yield return new {
+                        Name = "Priority Class:",
+                        Value = info.PriorityClass.ToString()
+                    };
+                }
+
+                if (info.LimitFlags.HasFlag(JobLimitFlags.SchedulingClass)) {
+                    yield return new {
+                        Name = "Scheduling Class:",
+                        Value = info.SchedulingClass
+                    };
+                }
+
+                if (info.LimitFlags.HasFlag(JobLimitFlags.BreakawayOk)) {
+                    yield return new {
+                        Name = "Breakaway OK:",
+                        Value = "Yes"
+                    };
+                }
+
+                if (info.LimitFlags.HasFlag(JobLimitFlags.DieOnUnhandledException)) {
+                    yield return new {
+                        Name = "Die on Unhandled Exception:",
+                        Value = "Yes"
+                    };
+                }
+
+                if (info.LimitFlags.HasFlag(JobLimitFlags.KillOnJobClose)) {
+                    yield return new {
+                        Name = "Kill on Job Close:",
+                        Value = "Yes"
+                    };
+                }
+
+                if (info.LimitFlags.HasFlag(JobLimitFlags.SlientBreakawayOk)) {
+                    yield return new {
+                        Name = "Silent Breakway OK:",
+                        Value = "Yes"
+                    };
+                }
+
+                if (info.LimitFlags.HasFlag(JobLimitFlags.JobMemory)) {
+                    yield return new {
+                        Name = "Job Memory Limit:",
+                        Value = "Yes"
+                    };
+                }
+
+            }
+        }
 	}
 }

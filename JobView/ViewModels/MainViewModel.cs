@@ -19,7 +19,7 @@ using Zodiacon.WPF;
 
 namespace JobView.ViewModels {
 	class MainViewModel : BindableBase, IMainViewModel, IDisposable {
-		JobManager _jobManager;
+		readonly JobManager _jobManager;
 		DriverInterface _driver;
 		List<JobObjectViewModel> _rootJobs;
 		Dictionary<UIntPtr, JobObjectViewModel> _jobs;

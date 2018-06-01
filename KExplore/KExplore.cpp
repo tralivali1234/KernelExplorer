@@ -391,7 +391,7 @@ NTSTATUS KExploreDeviceControl(PDEVICE_OBJECT, PIRP Irp) {
 				break;
 			}
 			auto objects = static_cast<void**>(Irp->AssociatedIrp.SystemBuffer);
-			for (int i = 0; i < size / sizeof(PVOID); i++) {
+			for (ULONG i = 0; i < size / sizeof(PVOID); i++) {
 				ObDereferenceObject(objects[i]);
 			}
 			len = size;

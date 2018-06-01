@@ -1,6 +1,7 @@
 ﻿using Microsoft.Win32.SafeHandles;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Security;
@@ -130,7 +131,13 @@ namespace JobView {
 
 		public enum JobInformationClass {
 			BasicAccountingInformation = 1,
-			BasicProcessList = 3
+			BasicProcessList = 3,
+            BasicLimitInformation = 2,
+            BasicUIRestrictions = 4,
+            ExtendedLimitInformation = 9,
+            GroupInformation = 11,
+            CpuRateControlInformation = 15,
+            BasicAndIoAccountingInformation = 8,
 		}
 
 		[StructLayout(LayoutKind.Sequential)]
@@ -153,7 +160,67 @@ namespace JobView {
 			public uint TotalTerminatedProcesses;
 		}
 
-		[Flags]
+        [Flags]
+        public enum JobLimitFlags : uint {
+            None = 0,
+            ActiveProcesses = 8,
+            Affinity = 0x10,
+            BreakawayOk = 0x800,
+            DieOnUnhandledException = 0x400,
+            JobMemory = 0x200,
+            JobTime = 4,
+            KillOnJobClose = 0x2000,
+            PreserveJobTime = 0x40,
+            PriorityClass = 0x20,
+            ProcessMemory = 0x100,
+            ProcessTime = 0x2,
+            SchedulingClass = 0x80,
+            SlientBreakawayOk = 0x1000,
+            SubsetAffinity = 0x4000,
+            WorkingSet = 1,
+            JobMemoryLow = 0x8000,
+            JobReadBytes = 0x10000,
+            JobWriteBytes = 0x20000,
+            RateControl = 0x40000,
+            IoRateControl       = 0x80000,
+            NetworkRateControl  = 0x100000,
+            JobMemoryTotal      = 0x200000,
+        }
+
+        [StructLayout(LayoutKind.Sequential)]
+        public struct JobBasicLimitInformation {
+            public long PerProcessUserTimeLimit;
+            public long PerJobUserTimeLimit;
+            public JobLimitFlags LimitFlags;
+            public IntPtr MinimumWorkingSetSize;
+            public IntPtr MaximumWorkingSetSize;
+            public uint ActiveProcessLimit;
+            public UIntPtr Affinity;
+            public ProcessPriorityClass PriorityClass;
+            public uint SchedulingClass;
+        }
+
+        [StructLayout(LayoutKind.Sequential)]
+        public struct IoCounters {
+            public ulong ReadOperationCount;
+            public ulong WriteOperationCount;
+            public ulong OtherOperationCount;
+            public ulong ReadTransferCount;
+            public ulong WriteTransferCount;
+            public ulong OtherTransferCount;
+        }
+
+        [StructLayout(LayoutKind.Sequential)]
+        public struct JobExtendedLimitInformation {
+            public JobBasicLimitInformation BasicLimitInformation;
+            public IoCounters IoInfo;
+            public IntPtr ProcessMemoryLimit;
+            public IntPtr JobMemoryLimit;
+            public IntPtr PeakProcessMemoryUsed;
+            public IntPtr PeakJobMemoryUsed;
+        }
+
+        [Flags]
 		public enum ServiceAccessMask {
 			Connect = 0x0001,
 			CreateService = 0x0002,
@@ -182,7 +249,13 @@ namespace JobView {
 		[DllImport("kernel32", CharSet = CharSet.Unicode, SetLastError = true)]
 		public unsafe static extern bool QueryInformationJobObject(IntPtr handle, JobInformationClass infoClass, out JobBasicAccoutingInformation info, int size, int* returned = null);
 
-		[DllImport("advapi32", CharSet = CharSet.Unicode, SetLastError = true)]
+        [DllImport("kernel32", CharSet = CharSet.Unicode, SetLastError = true)]
+        public unsafe static extern bool QueryInformationJobObject(IntPtr handle, JobInformationClass infoClass, out JobBasicLimitInformation info, int size, int* returned = null);
+
+        [DllImport("kernel32", CharSet = CharSet.Unicode, SetLastError = true)]
+        public unsafe static extern bool QueryInformationJobObject(IntPtr handle, JobInformationClass infoClass, out JobExtendedLimitInformation info, int size, int* returned = null);
+
+        [DllImport("advapi32", CharSet = CharSet.Unicode, SetLastError = true)]
 		public static extern IntPtr OpenSCManager(string machineName, string databaseName, ServiceAccessMask accessMask);
 
 		[DllImport("advapi32", CharSet = CharSet.Unicode, SetLastError = true)]
