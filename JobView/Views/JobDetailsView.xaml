@@ -99,11 +99,13 @@
                 <Run Text="{Binding TotalUserTime, Mode=OneWay}" FontWeight="Bold" />
             </TextBlock>
 
-            <TextBlock Grid.Row="8" Text="Peak Process Memory:" />
-            <TextBlock Grid.Row="8" Grid.Column="2" Text="{Binding JobInformation.PeakProcessMemory, StringFormat=\{0:N0\} KB}" />
-
-            <TextBlock Grid.Row="9" Text="Peak Job Memory:" />
-            <TextBlock Grid.Row="9" Grid.Column="2" Text="{Binding JobInformation.PeakJobMemory, StringFormat=\{0:N0\} KB}" />
+            <TextBlock Grid.Row="8" Text="Peak Memory:" />
+            <TextBlock Grid.Row="8" Grid.Column="2" DataContext="{Binding JobInformation}" >
+                <Span>Process: </Span>
+                <Run Text="{Binding PeakProcessMemory, Mode=OneWay, StringFormat=\{0:N0\} KB}" FontWeight="Bold" />
+                <Span>          Job: </Span>
+                <Run Text="{Binding PeakJobMemory, Mode=OneWay, StringFormat=\{0:N0\} KB}" FontWeight="Bold" />
+            </TextBlock>
 
             <TextBlock Grid.Row="12" Text="Job Limits:" />
             <ItemsControl Grid.Row="12" Grid.Column="2" ItemsSource="{Binding JobLimits}">

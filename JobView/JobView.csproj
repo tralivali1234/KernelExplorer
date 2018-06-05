@@ -170,9 +170,10 @@
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
     </EmbeddedResource>
-    <EmbeddedResource Include="..\x64\Release\KExplore.sys">
-      <Link>NativeBinaries\KExplore.sys</Link>
-    </EmbeddedResource>
+    <Content Include="..\x64\Release\KExplore.sys">
+      <Link>KExplore.sys</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
     <None Include="packages.config" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
@@ -209,8 +210,12 @@
     <Resource Include="Icons\job_plus.ico" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="NativeBinaries\DbgHelp.dll" />
-    <EmbeddedResource Include="NativeBinaries\SymSrv.dll" />
+    <Content Include="DbgHelp.dll">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="SymSrv.dll">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>

@@ -9,9 +9,10 @@ using System.Text;
 using System.Threading.Tasks;
 using static JobView.NativeMethods;
 using Microsoft.Win32.SafeHandles;
+using System.IO;
 
 namespace JobView.Models {
-	class JobManager : IDisposable {
+	sealed class JobManager : IDisposable {
 		List<JobObject> _rootJobs = new List<JobObject>(64);
 		Dictionary<UIntPtr, JobObject> _jobs = new Dictionary<UIntPtr, JobObject>(128);
 		static StructDescriptor _ejobDescription;
@@ -20,7 +21,7 @@ namespace JobView.Models {
 			_driver = driver;
 		}
 
-		void BuildEjobDescription() {
+		StructDescriptor BuildEjobDescription() {
 			if (_ejobDescription == null) {
 				using (var handler = SymbolHandler.Create(SymbolOptions.CaseInsensitive)) {
 					var address = handler.LoadSymbolsForModule(@"%systemroot%\system32\ntoskrnl.exe");
@@ -28,10 +29,12 @@ namespace JobView.Models {
 						throw new Win32Exception(Marshal.GetLastWin32Error());
 					var types = handler.EnumTypes(address, "_ejob");
 					Debug.Assert(types != null && types.Count == 1);
-
+                    if (types.Count == 0)
+                        return null;
 					_ejobDescription = handler.BuildStructDescriptor(address, types[0].TypeIndex);
 				}
 			}
+            return _ejobDescription;
 		}
 
 		public IReadOnlyList<JobObject> RootJobs => _rootJobs;
@@ -47,6 +50,9 @@ namespace JobView.Models {
 
 			if (_ejobDescription == null)
 				BuildEjobDescription();
+
+            if (_ejobDescription == null)
+                throw new FileNotFoundException("Can't locate symbol file for kernel");
 
 			var jobs = _driver.EnumJobs();
 			var bytes = stackalloc byte[512];

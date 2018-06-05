@@ -54,8 +54,8 @@ struct KernelFunctions {
 
 #else
 
-typedef PEJOB (*FPspGetNextJob)(PEJOB Job);
-typedef PEPROCESS (*FPsGetNextProcess)(PEPROCESS Process);
+typedef PEJOB (NTAPI *FPspGetNextJob)(PEJOB Job);
+typedef PEPROCESS (NTAPI *FPsGetNextProcess)(PEPROCESS Process);
 
 struct KernelFunctions {
     FPspGetNextJob PspGetNextJob;

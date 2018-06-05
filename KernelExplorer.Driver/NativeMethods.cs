@@ -39,10 +39,10 @@ namespace KernelExplorer.Driver {
 		static int ControlCode(int DeviceType, int Function, int Method, int Access) =>
 			(DeviceType << 16) | (Access << 14) | (Function << 2) | Method;
 
-		public static readonly int KExploreEnumJobs = ControlCode(DeviceType, 0x903, MethodBufferred, FileReadAccess);
-		public static readonly int KExploreOpenHandle = ControlCode(DeviceType, 0x905, MethodBufferred, FileReadAccess);
-		public static readonly int KExploreReadMemory = ControlCode(DeviceType, 0x901, MethodOutDirect, FileReadAccess);
-		public static readonly int KExploreInitFunctions = ControlCode(DeviceType, 0x9a, MethodBufferred, FileWriteAccess);
+		public static readonly int KExploreEnumJobs = ControlCode(DeviceType, 0x903, MethodBufferred, FileAnyAccess);
+		public static readonly int KExploreOpenHandle = ControlCode(DeviceType, 0x905, MethodBufferred, FileAnyAccess);
+		public static readonly int KExploreReadMemory = ControlCode(DeviceType, 0x901, MethodOutDirect, FileAnyAccess);
+		public static readonly int KExploreInitFunctions = ControlCode(DeviceType, 0x9a, MethodBufferred, FileAnyAccess);
         public static readonly int KExploreOpenProcessHandle = ControlCode(DeviceType, 0x90d, MethodBufferred, FileAnyAccess);
         public static readonly int KExploreOpenThreadHandle = ControlCode(DeviceType, 0x90e, MethodBufferred, FileAnyAccess);
 
