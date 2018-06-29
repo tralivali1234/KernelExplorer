@@ -128,7 +128,7 @@ NTSTATUS KExploreDeviceControl(PDEVICE_OBJECT, PIRP Irp) {
 		case KExploreIoctls::OpenObject:
 		{
 			if (inputLen < sizeof(OpenHandleData)) {
-				status = STATUS_INVALID_BUFFER_SIZE;
+				status = STATUS_BUFFER_TOO_SMALL;
 				break;
 			}
 			HANDLE hObject = nullptr;
