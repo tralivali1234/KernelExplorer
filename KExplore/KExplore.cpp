@@ -20,7 +20,7 @@ NTSTATUS DriverEntry(PDRIVER_OBJECT DriverObject, PUNICODE_STRING) {
 
 	UNICODE_STRING deviceName;
 	UNICODE_STRING win32Name;
-
+	
 	RtlInitUnicodeString(&deviceName, L"\\Device\\KExplore");
 	RtlInitUnicodeString(&win32Name, L"\\??\\KExplore");
 
