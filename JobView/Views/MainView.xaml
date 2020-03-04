@@ -9,6 +9,10 @@
              xmlns:metro="http://metro.mahapps.com/winfx/xaml/controls"
              mc:Ignorable="d" 
              d:DesignHeight="300" d:DesignWidth="300">
+    <i:Interaction.Behaviors>
+        <z:EventToCommand EventName="Loaded" Command="{Binding InitCommand}" />
+    </i:Interaction.Behaviors>
+
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
@@ -33,7 +37,7 @@
                     </Style.Triggers>
                 </Style>
             </TabControl.ItemContainerStyle>
-            <TabItem IsSelected="True">
+            <TabItem >
                 <TabItem.Header>
                     <StackPanel Orientation="Horizontal">
                         <Image Source="/icons/tree.ico" Width="20" Height="20" />
@@ -42,7 +46,7 @@
                 </TabItem.Header>
                 <local:JobTreeView />
             </TabItem>
-            <TabItem>
+            <TabItem IsSelected="True">
                 <TabItem.Header>
                     <StackPanel Orientation="Horizontal">
                         <Image Source="/icons/list.ico" Width="20" Height="20" />

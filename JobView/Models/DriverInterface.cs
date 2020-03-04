@@ -80,18 +80,24 @@ namespace JobView.Models {
 		}
 
 		public static async Task<ServiceControllerStatus?> LoadDriverAsync(string drivername) {
-			var controller = new ServiceController(drivername);
-			if (controller == null)
-				return null;
+            var controller = new ServiceController(drivername);
+            try {
+                if (controller == null)
+                    return null;
 
-			if (controller.Status == ServiceControllerStatus.Running)
-				return controller.Status;
+                if (controller.Status == ServiceControllerStatus.Running)
+                    return controller.Status;
+            }
+            catch (Exception) {
+                return null;
+            }
 
 			try {
 				controller.Start();
 				await Task.Run(() => controller.WaitForStatus(ServiceControllerStatus.Running, TimeSpan.FromSeconds(5)));
 			}
-			catch (Exception) {
+			catch (Exception ex) {
+                Debug.WriteLine(ex.Message);
 			}
 			return controller.Status;
 		}

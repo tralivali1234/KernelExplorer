@@ -20,7 +20,7 @@ NTSTATUS DriverEntry(PDRIVER_OBJECT DriverObject, PUNICODE_STRING) {
 
 	UNICODE_STRING deviceName;
 	UNICODE_STRING win32Name;
-
+	
 	RtlInitUnicodeString(&deviceName, L"\\Device\\KExplore");
 	RtlInitUnicodeString(&win32Name, L"\\??\\KExplore");
 
@@ -128,7 +128,7 @@ NTSTATUS KExploreDeviceControl(PDEVICE_OBJECT, PIRP Irp) {
 		case KExploreIoctls::OpenObject:
 		{
 			if (inputLen < sizeof(OpenHandleData)) {
-				status = STATUS_INVALID_BUFFER_SIZE;
+				status = STATUS_BUFFER_TOO_SMALL;
 				break;
 			}
 			HANDLE hObject = nullptr;
@@ -391,7 +391,7 @@ NTSTATUS KExploreDeviceControl(PDEVICE_OBJECT, PIRP Irp) {
 				break;
 			}
 			auto objects = static_cast<void**>(Irp->AssociatedIrp.SystemBuffer);
-			for (int i = 0; i < size / sizeof(PVOID); i++) {
+			for (ULONG i = 0; i < size / sizeof(PVOID); i++) {
 				ObDereferenceObject(objects[i]);
 			}
 			len = size;

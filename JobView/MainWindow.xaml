@@ -7,7 +7,7 @@
         xmlns:local="clr-namespace:JobView"
         xmlns:view="clr-namespace:JobView.Views"
         mc:Ignorable="d" TitleCaps="False" Icon="/icons/app.ico"
-        Title="Job Objects View (C)2017 by Pavel Yosifovich" MinHeight="320" MinWidth="480"
+        Title="Job Objects View v0.1 (C)2017-2018 by Pavel Yosifovich" MinHeight="320" MinWidth="480"
                    BorderThickness="1" BorderBrush="{DynamicResource AccentColorBrush}">
     <view:MainView>
         

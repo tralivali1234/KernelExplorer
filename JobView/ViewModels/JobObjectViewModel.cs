@@ -72,12 +72,29 @@ namespace JobView.ViewModels {
 			get {
 				JobBasicAccoutingInformation info1;
 				QueryInformationJobObject(Job.Handle, JobInformationClass.BasicAccountingInformation, out info1, Marshal.SizeOf<JobBasicAccoutingInformation>());
-				return new JobObjectInformation {
-					TotalProcesses = info1.TotalProcesses,
-					ActiveProcesses = info1.ActiveProcesses,
-					TerminatedProcesses = info1.TotalTerminatedProcesses,
-					TotalKernelTime = TimeSpan.FromTicks(info1.TotalKernelTime),
-					TotalUserTime = TimeSpan.FromTicks(info1.TotalUserTime)
+                JobExtendedLimitInformation info2;
+                QueryInformationJobObject(Job.Handle, JobInformationClass.ExtendedLimitInformation, out info2, Marshal.SizeOf<JobExtendedLimitInformation>());
+
+                return new JobObjectInformation {
+                    TotalProcesses = info1.TotalProcesses,
+                    ActiveProcesses = info1.ActiveProcesses,
+                    TerminatedProcesses = info1.TotalTerminatedProcesses,
+                    TotalKernelTime = TimeSpan.FromTicks(info1.TotalKernelTime),
+                    TotalUserTime = TimeSpan.FromTicks(info1.TotalUserTime),
+                    TotalPageFaultCount = info1.TotalPageFaultCount,
+                    LimitFlags = info2.BasicLimitInformation.LimitFlags,
+                    PerProcessUserTimeLimit = info2.BasicLimitInformation.PerProcessUserTimeLimit,
+                    PerJobUserTimeLimit = info2.BasicLimitInformation.PerJobUserTimeLimit,
+                    PriorityClass = info2.BasicLimitInformation.PriorityClass,
+                    SchedulingClass = info2.BasicLimitInformation.SchedulingClass,
+                    ActiveProcessLimit = info2.BasicLimitInformation.ActiveProcessLimit,
+                    MinimumWorkingSetSize = info2.BasicLimitInformation.MinimumWorkingSetSize.ToInt64(),
+                    MaximumWorkingSetSize = info2.BasicLimitInformation.MaximumWorkingSetSize.ToInt64(),
+                    Affinity = info2.BasicLimitInformation.Affinity.ToUInt64(),
+                    ProcessMemoryLimit = info2.ProcessMemoryLimit.ToInt64(),
+                    JobMemoryLimit = info2.JobMemoryLimit.ToInt64(),
+                    PeakProcessMemory = info2.PeakProcessMemoryUsed.ToInt64() >> 10,
+                    PeakJobMemory = info2.PeakJobMemoryUsed.ToInt64() >> 10
 				};
 			}
 		}

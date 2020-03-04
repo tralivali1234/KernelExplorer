@@ -8,8 +8,11 @@
              mc:Ignorable="d" 
              d:DesignHeight="300" d:DesignWidth="300" Margin="8" x:Name="This">
     <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" metro:VisibilityHelper.IsVisible="{Binding IsJobSelected}">
-        <Grid TextElement.FontSize="12">
+        <Grid >
             <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="Auto" />
@@ -28,13 +31,14 @@
                 <ColumnDefinition />
             </Grid.ColumnDefinitions>
             <TextBlock Text="Address:" />
-            <TextBlock Grid.Column="2" Text="{Binding Address, StringFormat=0x\{0:X\}}" FontWeight="Bold" FontFamily="Consolas"/>
+            <TextBox Grid.Column="2" IsReadOnly="True" Text="{Binding Address, Mode=OneWay, StringFormat=0x\{0:X\}}" FontWeight="Bold" FontFamily="Consolas" HorizontalAlignment="Left"
+                     BorderThickness="0" VerticalAlignment="Center"/>
 
             <TextBlock Grid.Row="1" Text="Job ID:" />
             <TextBlock Grid.Row="1" Grid.Column="2" Text="{Binding JobId}" FontWeight="Bold" />
 
             <TextBlock Grid.Row="2" Text="Name:" />
-            <TextBlock Grid.Row="2" Grid.Column="2" Text="{Binding Name}" FontWeight="Bold"/>
+            <TextBox Grid.Row="2" Grid.Column="2" Text="{Binding Name, Mode=OneWay}" TextWrapping="Wrap" FontWeight="Bold" HorizontalAlignment="Left" BorderThickness="0" VerticalAlignment="Center"/>
 
             <TextBlock Grid.Row="3" Text="Parent Job:" />
             <TextBlock Grid.Row="3" Grid.Column="2">
@@ -94,6 +98,31 @@
                 <Span>       Total User Time: </Span>
                 <Run Text="{Binding TotalUserTime, Mode=OneWay}" FontWeight="Bold" />
             </TextBlock>
+
+            <TextBlock Grid.Row="8" Text="Peak Memory:" />
+            <TextBlock Grid.Row="8" Grid.Column="2" DataContext="{Binding JobInformation}" >
+                <Span>Process: </Span>
+                <Run Text="{Binding PeakProcessMemory, Mode=OneWay, StringFormat=\{0:N0\} KB}" FontWeight="Bold" />
+                <Span>          Job: </Span>
+                <Run Text="{Binding PeakJobMemory, Mode=OneWay, StringFormat=\{0:N0\} KB}" FontWeight="Bold" />
+            </TextBlock>
+
+            <TextBlock Grid.Row="12" Text="Job Limits:" />
+            <ItemsControl Grid.Row="12" Grid.Column="2" ItemsSource="{Binding JobLimits}">
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition SharedSizeGroup="NameGroup" Width="Auto" />
+                                <ColumnDefinition Width="8" />
+                                <ColumnDefinition />
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Text="{Binding Name}" />
+                            <TextBlock Grid.Column="2" Text="{Binding Value}" FontWeight="Bold" />
+                        </Grid>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
         </Grid>
     </ScrollViewer>
 </UserControl>

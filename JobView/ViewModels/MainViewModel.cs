@@ -24,7 +24,7 @@ namespace JobView.ViewModels {
 		List<JobObjectViewModel> _rootJobs;
 		Dictionary<UIntPtr, JobObjectViewModel> _jobs;
 		public readonly IUIServices UI;
-		public readonly bool IsInitialized;
+		public bool IsInitialized;
 
 		public IDictionary<UIntPtr, JobObjectViewModel> Jobs => _jobs;
 
@@ -32,29 +32,16 @@ namespace JobView.ViewModels {
 
 		public DriverInterface Driver => _driver;
 
-		public JobDetailsViewModel JobDetails { get; }
+		public JobDetailsViewModel JobDetails { get; private set; }
 
 		public MainViewModel(IUIServices ui) {
 			UI = ui;
 			Thread.CurrentThread.Priority = ThreadPriority.Highest;
+        }
 
-			Init();
+        public ICommand InitCommand => new DelegateCommand(async () => await Init());
 
-			if (_driver != null) {
-
-				_jobManager = new JobManager(_driver);
-				JobDetails = new JobDetailsViewModel(this);
-
-				IsInitialized = true;
-
-#pragma warning disable CS4014 // Because this call is not awaited, execution of the current method continues before the call is completed
-				Refresh();
-#pragma warning restore CS4014 // Because this call is not awaited, execution of the current method continues before the call is completed
-
-			}
-		}
-
-		async void Init() {
+        async Task Init() {
 			try {
 				_driver = new DriverInterface();
 			}
@@ -63,13 +50,13 @@ namespace JobView.ViewModels {
 				bool isAdmin = new WindowsPrincipal(WindowsIdentity.GetCurrent()).IsInRole(WindowsBuiltInRole.Administrator);
 				if (isAdmin) {
 					await InstallAndLoadDriverAsync();
-					Init();
+					await Init();
 				}
 				else {
 					if (UI.MessageBoxService.ShowMessage("Requried driver is not loaded or not installed. Restart application with elevated provileges?",
 						App.Title, MessageBoxButton.OKCancel, MessageBoxImage.Question) == MessageBoxResult.OK) {
 						var startInfo = new ProcessStartInfo(Assembly.GetExecutingAssembly().Location) {
-							Verb = "runas"
+							Verb = "runas",
 						};
 						Process.Start(startInfo);
 					}
@@ -80,9 +67,22 @@ namespace JobView.ViewModels {
 				UI.MessageBoxService.ShowMessage($"Error: {ex.Message}", App.Title);
 				Application.Current.Shutdown(1);
 			}
-		}
 
-		private async Task InstallAndLoadDriverAsync() {
+            if (_driver != null) {
+
+                _jobManager = new JobManager(_driver);
+                JobDetails = new JobDetailsViewModel(this);
+
+                IsInitialized = true;
+
+                await Refresh();
+
+            }
+
+
+        }
+
+        private async Task InstallAndLoadDriverAsync() {
 			var status = await DriverInterface.LoadDriverAsync("KExplore");
 			if (status == null) {
 				var ok = await DriverInterface.InstallDriverAsync("KExplore", Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location) + @"\KExplore.sys");
@@ -156,7 +156,7 @@ namespace JobView.ViewModels {
 
 		public ICommand GotoJobCommand => new DelegateCommand<JobObject>(job => SelectedJob = _jobs[job.Address]);
 
-		public int ActiveProcessesInJob => _jobs.Values.Sum(j => j.ProcessCount);
+		public int? ActiveProcessesInJob => _jobs?.Values.Sum(j => j.ProcessCount);
 
 	}
 }

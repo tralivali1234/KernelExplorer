@@ -16,16 +16,16 @@
             </Style>
             <z:BindingProxy x:Key="Proxy" Data="{Binding}" />
         </Grid.Resources>
-        <Grid.RowDefinitions>
-            <RowDefinition Height="2*"/>
-            <RowDefinition />
-        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="2*"/>
+            <ColumnDefinition />
+        </Grid.ColumnDefinitions>
         <DataGrid ItemsSource="{Binding JobList}" IsReadOnly="True" AutoGenerateColumns="False" metro:ButtonHelper.PreserveTextCase="True" 
                   SelectionMode="Single" SelectedItem="{Binding SelectedJob, Mode=TwoWay}" z:SelectedItemHelper.BringIntoViewWhenSelected="True">
             <DataGrid.Columns>
                 <DataGridTextColumn Header="Address" Binding="{Binding Address, StringFormat=0x\{0:X\}, Mode=OneTime}" ElementStyle="{StaticResource CenterText}" />
                 <DataGridTextColumn Header="ID" Binding="{Binding JobId}" ElementStyle="{StaticResource CenterText}" />
-                <DataGridTextColumn Header="Name" Binding="{Binding Name}" MinWidth="100" FontWeight="Bold" />
+                <DataGridTextColumn Header="Name" Binding="{Binding Name}" MinWidth="100" FontWeight="Bold" Width="300" />
                 <DataGridTextColumn Header="Child Jobs" Binding="{Binding ChildJobsCount}" ElementStyle="{StaticResource CenterText}" />
                 <DataGridTextColumn Header="Processes" Binding="{Binding ProcessCount}" ElementStyle="{StaticResource CenterText}" />
                 <DataGridTemplateColumn Header="Parent Job">
@@ -43,10 +43,11 @@
                 </DataGridTemplateColumn>
                 <DataGridTextColumn Header="User Time" Binding="{Binding JobInformation.TotalUserTime}" />
                 <DataGridTextColumn Header="Kernel Time" Binding="{Binding JobInformation.TotalKernelTime}" />
+                <DataGridTextColumn Header="Limit Flags" Binding="{Binding JobInformation.LimitFlags}" />
             </DataGrid.Columns>
         </DataGrid>
-        <local:JobDetailsView Grid.Row="1" DataContext="{Binding JobDetails}" />
+        <local:JobDetailsView Grid.Column="1" DataContext="{Binding JobDetails}" />
 
-        <GridSplitter Height="2" VerticalAlignment="Bottom" Background="{DynamicResource BlackBrush}" Margin="0,-1" HorizontalAlignment="Stretch" />
+        <GridSplitter Width="2" VerticalAlignment="Stretch" Background="{DynamicResource AccentColorBrush2}" Margin="-1,0" HorizontalAlignment="Right" />
     </Grid>
 </UserControl>
